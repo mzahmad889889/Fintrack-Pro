@@ -249,6 +249,7 @@ const TODAY=NOW.toISOString().split('T')[0];
 let tab='home',lSub='personal',lFlt='all',cFlt='All',budM=CUR_M,editBC=null,walTrFlt='all',nid=200;
 let expenses=[],pLoans=[],installments=[],investments=[],budgets={},categories=[...DEF_CATS];
 let incomes=[],bankInitBalance=0;
+let salaries=[],salaryPayments=[];
 let githubToken='',gistId='',lastSynced='';
 
 // ══ SEED ══════════════════════════════════════
@@ -276,11 +277,14 @@ const SV=[
 ];
 const SB={Food:10000,Transport:5000,Housing:25000,Shopping:8000,Health:4000,Entertainment:3000,Other:2000};
 const SIN=[
-  {id:100,date:'2026-04-01',amount:85000,source:'Salary',notes:'April salary',type:'monthly'},
-  {id:101,date:'2026-04-15',amount:12000,source:'Freelance',notes:'Web project',type:'one-time'},
-  {id:102,date:TODAY,amount:5000,source:'Business',notes:'Shop income',type:'daily'},
-  {id:103,date:'2026-03-01',amount:85000,source:'Salary',notes:'March salary',type:'monthly'},
+  {id:100,date:'2026-04-15',amount:12000,source:'Freelance',notes:'Web project'},
+  {id:101,date:TODAY,amount:5000,source:'Business',notes:'Shop income'},
 ];
+const SSAL=[
+  {id:150,companyName:'Tech Solutions Pvt.',amount:85000,startMonth:'2026-04',active:true,notes:'Main job'},
+  {id:151,companyName:'Freelance Studio',amount:40000,startMonth:'2026-04',active:true,notes:'Part time'},
+];
+const SPAY=[];
 
 // ══ STORAGE ═══════════════════════════════════
 function load(){
@@ -294,6 +298,8 @@ function load(){
     CAT_ICONS   =JSON.parse(localStorage.getItem('fp_icons'))||CAT_ICONS;
     CAT_COLORS  =JSON.parse(localStorage.getItem('fp_colors'))||CAT_COLORS;
     incomes     =JSON.parse(localStorage.getItem('fp_inc'))||cp(SIN);
+    salaries    =JSON.parse(localStorage.getItem('fp_sal'))||cp(SSAL);
+    salaryPayments=JSON.parse(localStorage.getItem('fp_spay'))||cp(SPAY);
     bankInitBalance=parseFloat(localStorage.getItem('fp_bal')||'0');
     nid         =parseInt(localStorage.getItem('fp_nid')||'200');
     githubToken =localStorage.getItem('fp_gh_token')||'';
@@ -301,7 +307,7 @@ function load(){
     lastSynced  =localStorage.getItem('fp_last_sync')||'';
   }catch(e){
     expenses=cp(SE);pLoans=cp(SL);installments=cp(SI);investments=cp(SV);
-    budgets=cp(SB);categories=[...DEF_CATS];incomes=cp(SIN);
+    budgets=cp(SB);categories=[...DEF_CATS];incomes=cp(SIN);salaries=cp(SSAL);salaryPayments=cp(SPAY);
   }
 }
 function save(){
@@ -314,6 +320,8 @@ function save(){
   localStorage.setItem('fp_icons',JSON.stringify(CAT_ICONS));
   localStorage.setItem('fp_colors',JSON.stringify(CAT_COLORS));
   localStorage.setItem('fp_inc',JSON.stringify(incomes));
+  localStorage.setItem('fp_sal',JSON.stringify(salaries));
+  localStorage.setItem('fp_spay',JSON.stringify(salaryPayments));
   localStorage.setItem('fp_bal',bankInitBalance);
   localStorage.setItem('fp_nid',nid);
   syncToGist();
@@ -626,14 +634,80 @@ function rWallet(){
   </div>
   <div style="height:12px"></div>
 
-  <!-- Income sources this month -->
+  <!-- Monthly Salaries Section -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div style="font-weight:700;font-size:15px">💼 Monthly Salaries</div>
+    <button class="btnt" onclick="showSalaryMod()" style="font-size:12px;padding:6px 12px">+ Add Salary</button>
+  </div>
+
+  ${salaries.length===0?`<div class="card" style="text-align:center;padding:18px;color:#9CA3AF;font-size:13px">No salaries added yet. Tap + Add Salary.</div>`
+  :salaries.map(sal=>{
+    const months=salaryMonths(sal);
+    const paidCount=months.filter(m=>isSalPaid(sal.id,m)).length;
+    const totalSalIncome=paidCount*sal.amount;
+    return `
+    <div class="card" style="margin-bottom:12px">
+      <!-- Salary Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-weight:700;font-size:15px">🏢 ${h(sal.companyName)}</div>
+          <div style="font-size:12px;color:#9CA3AF;margin-top:2px">${sal.notes||''} · Since ${sal.startMonth}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-weight:800;font-size:16px;color:#16A34A">${fmt(sal.amount)}<span style="font-size:10px;color:#9CA3AF">/mo</span></div>
+          <div style="display:flex;gap:5px;margin-top:4px;justify-content:flex-end">
+            <button class="btne" style="padding:4px 8px;font-size:11px" onclick="showSalaryMod(${sal.id})">✏️</button>
+            <button class="btnd" style="padding:4px 8px;font-size:11px" onclick="delSalary(${sal.id})">🗑️</button>
+          </div>
+        </div>
+      </div>
+      <!-- Summary bar -->
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div style="background:#F0FDF4;border-radius:8px;padding:7px 10px;flex:1;text-align:center">
+          <div style="font-size:9px;color:#16A34A;font-weight:700">RECEIVED</div>
+          <div style="font-size:13px;font-weight:800;color:#16A34A">${paidCount} months</div>
+        </div>
+        <div style="background:#FEF2F2;border-radius:8px;padding:7px 10px;flex:1;text-align:center">
+          <div style="font-size:9px;color:#DC2626;font-weight:700">PENDING</div>
+          <div style="font-size:13px;font-weight:800;color:#DC2626">${months.length-paidCount} months</div>
+        </div>
+        <div style="background:#F0FDF4;border-radius:8px;padding:7px 10px;flex:1;text-align:center">
+          <div style="font-size:9px;color:#0D9488;font-weight:700">TOTAL IN</div>
+          <div style="font-size:12px;font-weight:800;color:#0D9488">${fmt(totalSalIncome)}</div>
+        </div>
+      </div>
+      <!-- Month by month list -->
+      ${months.map(ym=>{
+        const paid=isSalPaid(sal.id,ym);
+        const [y,m]=ym.split('-');
+        const label=new Date(parseInt(y),parseInt(m)-1,1).toLocaleDateString('en-PK',{month:'long',year:'numeric'});
+        const isCurrent=ym===CUR_M;
+        return `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F5F5F5">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">${paid?'✅':'⏳'}</span>
+            <div>
+              <div style="font-size:13px;font-weight:600">${label}${isCurrent?' <span style="font-size:10px;background:#EFF6FF;color:#2563EB;padding:1px 6px;border-radius:99px;font-weight:600">Current</span>':''}</div>
+              ${paid?`<div style="font-size:10px;color:#16A34A;font-weight:600">Received ✓</div>`:`<div style="font-size:10px;color:#F59E0B;font-weight:600">Not received</div>`}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-weight:700;font-size:13px;color:${paid?'#16A34A':'#9CA3AF'}">${fmt(sal.amount)}</span>
+            <button onclick="toggleSalMonth(${sal.id},'${ym}')" style="padding:5px 10px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:700;background:${paid?'#FEF2F2':'#F0FDF4'};color:${paid?'#DC2626':'#16A34A'}">${paid?'Undo':'Mark Paid'}</button>
+          </div>
+        </div>`;}).join('')}
+    </div>`;}).join('')}
+
+  <div style="height:4px"></div>
+
+  <!-- One-time Income sources this month -->
   ${(() => {
     const src={};
     mInc(CUR_M).forEach(i=>{src[i.source]=(src[i.source]||0)+i.amount;});
     const srcs=Object.entries(src).sort((a,b)=>b[1]-a[1]);
     return srcs.length?`
     <div class="card" style="margin-bottom:12px">
-      <div style="font-weight:700;font-size:13px;margin-bottom:10px">📊 Income Sources (This Month)</div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px">📊 Other Income This Month</div>
       ${srcs.map(([s,v])=>`<div class="trow">
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:18px">${INC_ICONS[s]||'💵'}</span>
@@ -996,25 +1070,21 @@ function subExp(id){
   save();closeModal();render();toast(id?'✅ Updated!':'✅ Saved!');
 }
 
-// Income
+// Income (one-time only — monthly salaries managed separately)
 function showIncomeMod(id){
   const inc=id?incomes.find(x=>x.id===id):null;
   document.getElementById('modal').innerHTML=`
   <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
     <div class="mh"><div class="mt">${inc?'Edit':'Add'} Income</div><button class="xb" onclick="closeModal()">✕</button></div>
+    <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 12px;margin-bottom:13px;font-size:12px;color:#92400E">
+      💡 For monthly salary, use the <b>Monthly Salaries</b> section above in Wallet tab.
+    </div>
     <div class="fg"><label class="fl">Amount (PKR)</label><input class="fi" id="ia" value="${inc?inc.amount:''}" placeholder="0" type="number" inputmode="decimal"></div>
     <div class="fg"><label class="fl">Income Source</label>
       <select class="fs" id="is">${INC_SRCS.map(s=>`<option value="${s}" ${inc&&inc.source===s?'selected':''}>${INC_ICONS[s]||'💵'} ${s}</option>`).join('')}</select>
     </div>
-    <div class="fg"><label class="fl">Type</label>
-      <select class="fs" id="it">
-        <option value="monthly" ${!inc||inc.type==='monthly'?'selected':''}>📅 Monthly (Salary etc.)</option>
-        <option value="daily" ${inc&&inc.type==='daily'?'selected':''}>☀️ Daily Income</option>
-        <option value="one-time" ${inc&&inc.type==='one-time'?'selected':''}>💫 One-time</option>
-      </select>
-    </div>
     <div class="fg"><label class="fl">Date</label><input class="fi" id="id2" type="date" value="${inc?inc.date:TODAY}"></div>
-    <div class="fg"><label class="fl">Notes (optional)</label><input class="fi" id="in2" value="${inc?h(inc.notes||''):''}" placeholder="e.g. April salary, client payment..." type="text"></div>
+    <div class="fg"><label class="fl">Notes (optional)</label><input class="fi" id="in2" value="${inc?h(inc.notes||''):''}" placeholder="e.g. client payment, bonus..." type="text"></div>
     <button class="btnp" onclick="subIncome(${id||''})">💾 ${inc?'Update':'Save'} Income</button>
   </div></div>`;
   setTimeout(()=>document.getElementById('ia').focus(),80);
@@ -1022,13 +1092,82 @@ function showIncomeMod(id){
 function subIncome(id){
   const amt=parseFloat(document.getElementById('ia').value);
   const src=document.getElementById('is').value;
-  const type=document.getElementById('it').value;
   const date=document.getElementById('id2').value;
   const notes=document.getElementById('in2').value.trim();
   if(isNaN(amt)||amt<=0){toast('⚠️ Enter a valid amount');return;}
-  if(id)incomes=incomes.map(i=>i.id===id?{...i,amount:amt,source:src,type,date,notes}:i);
-  else incomes.push({id:nid++,amount:amt,source:src,type,date,notes});
+  if(id)incomes=incomes.map(i=>i.id===id?{...i,amount:amt,source:src,date,notes}:i);
+  else incomes.push({id:nid++,amount:amt,source:src,date,notes});
   save();closeModal();render();toast(id?'✅ Updated!':'✅ Income saved!');
+}
+
+// ── Salary Management ──────────────────────────
+function salaryMonths(sal){
+  // Generate months from salary's startMonth up to current month
+  const r=[];
+  const [sy,sm]=sal.startMonth.split('-').map(Number);
+  const start=new Date(sy,sm-1,1);
+  const end=new Date(NOW.getFullYear(),NOW.getMonth(),1);
+  let cur=new Date(start);
+  while(cur<=end){
+    const ym=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`;
+    r.push(ym);
+    cur.setMonth(cur.getMonth()+1);
+  }
+  return r.reverse(); // newest first
+}
+function isSalPaid(salId,month){
+  return salaryPayments.some(p=>p.salaryId===salId&&p.month===month&&p.paid);
+}
+function toggleSalMonth(salId,month){
+  const existing=salaryPayments.find(p=>p.salaryId===salId&&p.month===month);
+  if(existing){
+    salaryPayments=salaryPayments.map(p=>p.salaryId===salId&&p.month===month?{...p,paid:!p.paid,paidDate:!p.paid?TODAY:''}:p);
+    const wasPaid=existing.paid;
+    if(!wasPaid){
+      // Mark paid → add income entry
+      const sal=salaries.find(s=>s.id===salId);
+      if(sal){incomes.push({id:nid++,amount:sal.amount,source:'Salary',date:month+'-01',notes:sal.companyName+' salary'});}
+    } else {
+      // Mark unpaid → remove auto-added income entry for that month
+      incomes=incomes.filter(i=>!(i.source==='Salary'&&i.notes===salaries.find(s=>s.id===salId)?.companyName+' salary'&&i.date===month+'-01'));
+    }
+  } else {
+    // First time marking this month
+    salaryPayments.push({salaryId:salId,month,paid:true,paidDate:TODAY});
+    const sal=salaries.find(s=>s.id===salId);
+    if(sal){incomes.push({id:nid++,amount:sal.amount,source:'Salary',date:month+'-01',notes:sal.companyName+' salary'});}
+    toast('✅ Salary marked as received!');
+  }
+  save();render();
+}
+function showSalaryMod(id){
+  const s=id?salaries.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`
+  <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt">${s?'Edit':'Add'} Monthly Salary</div><button class="xb" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Company Name</label><input class="fi" id="sc" value="${s?h(s.companyName):''}" placeholder="e.g. Tech Solutions Pvt." type="text"></div>
+    <div class="fg"><label class="fl">Monthly Salary (PKR)</label><input class="fi" id="sa" value="${s?s.amount:''}" placeholder="0" type="number" inputmode="decimal"></div>
+    <div class="fg"><label class="fl">Start Month</label><input class="fi" id="sm2" type="month" value="${s?s.startMonth:'2026-04'}"></div>
+    <div class="fg"><label class="fl">Notes (optional)</label><input class="fi" id="sn" value="${s?h(s.notes||''):''}" placeholder="e.g. Main job, Part time..." type="text"></div>
+    <button class="btnp" onclick="subSalary(${id||''})">💾 ${s?'Update':'Save'} Salary</button>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('sc').focus(),80);
+}
+function subSalary(id){
+  const company=document.getElementById('sc').value.trim();
+  const amt=parseFloat(document.getElementById('sa').value);
+  const sm=document.getElementById('sm2').value;
+  const notes=document.getElementById('sn').value.trim();
+  if(!company||isNaN(amt)||amt<=0){toast('⚠️ Fill company name and amount');return;}
+  if(id)salaries=salaries.map(s=>s.id===id?{...s,companyName:company,amount:amt,startMonth:sm,notes}:s);
+  else salaries.push({id:nid++,companyName:company,amount:amt,startMonth:sm,active:true,notes});
+  save();closeModal();render();toast(id?'✅ Updated!':'✅ Salary added!');
+}
+function delSalary(id){
+  if(!confirm('Delete this salary source?'))return;
+  salaries=salaries.filter(s=>s.id!==id);
+  salaryPayments=salaryPayments.filter(p=>p.salaryId!==id);
+  save();render();toast('🗑️ Deleted');
 }
 
 // Set Balance
@@ -1202,7 +1341,7 @@ function buildPayload(){
   return JSON.stringify({
     expenses,pLoans,installments,investments,
     budgets,categories,CAT_ICONS,CAT_COLORS,
-    incomes,bankInitBalance,nid,
+    incomes,salaries,salaryPayments,bankInitBalance,nid,
     savedAt:new Date().toISOString()
   });
 }
@@ -1248,6 +1387,8 @@ async function syncFromGist(){
       CAT_ICONS=d.CAT_ICONS||CAT_ICONS;
       CAT_COLORS=d.CAT_COLORS||CAT_COLORS;
       incomes=d.incomes||incomes;
+      salaries=d.salaries||salaries;
+      salaryPayments=d.salaryPayments||salaryPayments;
       bankInitBalance=d.bankInitBalance||bankInitBalance;
       nid=d.nid||nid;
       // persist to localStorage
