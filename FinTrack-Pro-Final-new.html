@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FinTrack Pro">
+<meta name="theme-color" content="#16A34A">
+<title>FinTrack Pro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;background:#F5F5F0;color:#111;max-width:480px;margin:0 auto;display:flex;flex-direction:column;height:100%}
+::-webkit-scrollbar{display:none}
+input,select,button,textarea{font-family:inherit}
+#app{display:flex;flex-direction:column;height:100%}
+
+/* Header */
+.hdr{padding:calc(13px + env(safe-area-inset-top,0px)) 16px 12px;background:#fff;border-bottom:1px solid #EBEBEB;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:90}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.main{padding:15px 14px 22px}
+.bnav{background:#fff;border-top:1px solid #EBEBEB;display:flex;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px);z-index:90}
+
+/* Logo */
+.logo{display:flex;align-items:center;gap:9px}
+.logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#16A34A,#0D9488);color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center}
+.logo-title{font-size:16px;font-weight:700}
+.logo-sub{font-size:10px;color:#9CA3AF}
+
+/* Nav — 6 tabs */
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 0 5px;background:none;border:none;cursor:pointer;color:#B0B0B0;font-size:8.5px;font-weight:500;min-width:0}
+.ni.on{color:#16A34A;font-weight:700}
+.ni-ic{font-size:19px;line-height:1}
+
+/* Cards */
+.card{background:#fff;border-radius:15px;padding:13px 14px;border:1px solid #EBEBEB;margin-bottom:10px}
+.cg{background:#F0FDF4;border-color:#BBF7D0}
+.cr{background:#FEF2F2;border-color:#FECACA}
+.cb{background:#EFF6FF;border-color:#BFDBFE}
+.cy{background:#FFFBEB;border-color:#FDE68A}
+.ct{background:#F0FDFA;border-color:#99F6E4}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:10px}
+
+/* Typography */
+.lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#9CA3AF;margin-bottom:3px}
+.lg{color:#16A34A}.lr{color:#DC2626}.lb{color:#2563EB}.ly{color:#D97706}.lt{color:#0D9488}
+.n1{font-size:29px;font-weight:800;letter-spacing:-.5px}
+.n2{font-size:19px;font-weight:700}
+.n3{font-size:14px;font-weight:700}
+.nt{font-size:11px;color:#9CA3AF;margin-top:2px}
+.stitle{font-size:17px;font-weight:700;margin-bottom:12px}
+
+/* Progress */
+.bar{height:8px;background:#EBEBEB;border-radius:99px;overflow:hidden;margin:5px 0}
+.barf{height:100%;border-radius:99px;transition:width .5s ease}
+
+/* Pills */
+.pills{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
+.pill{padding:6px 12px;border-radius:99px;border:none;cursor:pointer;font-size:12px;white-space:nowrap;font-weight:500;background:#F0F0EC;color:#6B7280}
+.pill.on{background:#16A34A;color:#fff;font-weight:700}
+.pill.ron{background:#DC2626;color:#fff;font-weight:700}
+.pill.ton{background:#0D9488;color:#fff;font-weight:700}
+
+/* Items */
+.item{background:#fff;border-radius:13px;padding:12px 13px;border:1px solid #EBEBEB;margin-bottom:8px}
+.ir{display:flex;align-items:center;gap:11px}
+.ibox{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.inm{font-weight:600;font-size:14px}
+.imt{font-size:11px;color:#9CA3AF;margin-top:2px}
+.ar{display:flex;gap:6px;margin-top:9px}
+
+/* Buttons */
+.btnp{width:100%;padding:13px;border-radius:13px;border:none;background:linear-gradient(135deg,#16A34A,#15803D);color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px}
+.btnt{background:#16A34A;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-weight:600;cursor:pointer;font-size:13px}
+.btntb{background:#2563EB;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-weight:600;cursor:pointer;font-size:13px}
+.btno{flex:1;padding:8px;border-radius:9px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:#6B7280}
+.btno.on{border-color:#BBF7D0;background:#F0FDF4;color:#16A34A}
+.btne{padding:7px 10px;border-radius:8px;border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;cursor:pointer;font-size:12px;font-weight:600}
+.btnd{padding:7px 10px;border-radius:8px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;cursor:pointer;font-size:12px;font-weight:600}
+
+/* Budget */
+.bi{background:#fff;border-radius:13px;padding:12px 13px;border:1px solid #EBEBEB;margin-bottom:9px}
+.br2{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.bcat{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px}
+.edbtn{background:none;border:1px solid #E5E7EB;border-radius:7px;padding:4px 9px;cursor:pointer;font-size:11px;color:#6B7280}
+.inli{width:110px;padding:5px 8px;border:1.5px solid #16A34A;border-radius:8px;font-size:14px;outline:none}
+.okb{background:#16A34A;color:#fff;border:none;border-radius:7px;padding:5px 9px;cursor:pointer}
+.cxb{background:#F3F4F6;border:none;border-radius:7px;padding:5px 9px;cursor:pointer}
+
+/* Modal */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;backdrop-filter:blur(2px)}
+.sh{background:#fff;width:100%;max-width:480px;margin:0 auto;border-radius:22px 22px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow-y:auto;animation:su .25s ease}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.mt{font-size:17px;font-weight:700}
+.xb{background:#F3F4F6;border:none;border-radius:9px;width:32px;height:32px;cursor:pointer;font-size:15px}
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.fi,.fs{width:100%;padding:11px 12px;border:1.5px solid #E5E7EB;border-radius:11px;font-size:15px;background:#FAFAFA;outline:none;-webkit-appearance:none}
+.fi:focus,.fs:focus{border-color:#16A34A;background:#F0FDF4}
+.st2{display:flex;gap:8px;margin-bottom:14px}
+.st{flex:1;padding:10px;border-radius:11px;border:none;cursor:pointer;font-weight:600;font-size:13px}
+.st.on{background:#111;color:#fff}
+.st:not(.on){background:#F3F4F6;color:#6B7280}
+
+/* Badge */
+.bdg{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:600;margin-left:4px;vertical-align:middle}
+.bdgg{background:#F0FDF4;color:#16A34A}
+.bdgr{background:#FEF2F2;color:#DC2626}
+.bdgy{background:#F3F4F6;color:#9CA3AF}
+.bdgb{background:#EFF6FF;color:#2563EB}
+.bdgt{background:#F0FDFA;color:#0D9488}
+
+/* FAB */
+.fab{position:absolute;bottom:calc(64px + env(safe-area-inset-bottom,0px));right:17px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#16A34A,#15803D);color:#fff;border:none;font-size:27px;cursor:pointer;box-shadow:0 4px 18px rgba(22,163,74,.5);display:none;align-items:center;justify-content:center;z-index:110}
+
+/* Toast */
+#toast{position:fixed;bottom:calc(72px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(20px);background:#111;color:#fff;padding:9px 18px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:300;white-space:nowrap;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Donut */
+.dw{display:flex;align-items:center;gap:13px;margin:9px 0}
+.dn{width:88px;height:88px;border-radius:50%;flex-shrink:0}
+.leg{flex:1;display:flex;flex-direction:column;gap:5px}
+.li{display:flex;align-items:center;gap:7px;font-size:11px}
+.ld{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Month select */
+.ms{width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:11px;font-size:14px;background:#fff;outline:none;-webkit-appearance:none;margin-bottom:13px;font-weight:600;cursor:pointer}
+.ms:focus{border-color:#16A34A}
+
+/* Empty */
+.emp{text-align:center;padding:36px 20px;color:#9CA3AF}
+.emp i{font-size:34px;display:block;margin-bottom:9px}
+
+/* Transaction row */
+.trow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F5F5F5}
+.trow:last-child{border:none}
+
+/* Stat box */
+.sbox{background:#F5F5F0;border-radius:9px;padding:8px;text-align:center}
+.sbox .sl{font-size:9px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.sbox .sv{font-weight:800;font-size:12px;margin-top:2px}
+
+/* Net row */
+.nr{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F5F5F5;font-size:13px}
+.nr:last-child{border:none}
+
+/* Wallet balance card */
+.walcard{background:linear-gradient(135deg,#16A34A 0%,#0D9488 100%);border-radius:18px;padding:20px;color:#fff;margin-bottom:12px;position:relative;overflow:hidden}
+.walcard::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.08)}
+.walcard::after{content:'';position:absolute;bottom:-40px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.05)}
+.walbig{font-size:34px;font-weight:800;letter-spacing:-.5px;position:relative;z-index:1}
+.wallbl{font-size:11px;opacity:.8;margin-bottom:4px;position:relative;z-index:1}
+.walrow{display:flex;gap:0;margin-top:16px;position:relative;z-index:1}
+.walstat{flex:1;text-align:center}
+.walstat:first-child{border-right:1px solid rgba(255,255,255,.2)}
+.walstat .wsl{font-size:10px;opacity:.75;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.walstat .wsv{font-size:15px;font-weight:800;margin-top:2px}
+
+/* Income item */
+.inc-item{display:flex;align-items:center;gap:10px;background:#fff;border-radius:13px;padding:11px 13px;border:1px solid #EBEBEB;margin-bottom:7px}
+.inc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* TX item */
+.tx-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F5F5F5}
+.tx-item:last-child{border:none}
+.tx-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hdr">
+    <div class="logo">
+      <div class="logo-icon">F</div>
+      <div>
+        <div class="logo-title">FinTrack Pro</div>
+        <div class="logo-sub">Personal Finance</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <span id="hdr-date" style="font-size:11px;color:#9CA3AF;font-weight:500"></span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div id="sync-status" style="display:flex;align-items:center;gap:4px;font-size:10px;color:#9CA3AF;font-weight:500">
+          <span id="sync-dot" style="width:7px;height:7px;border-radius:50%;background:#9CA3AF;display:inline-block;flex-shrink:0"></span>
+          <span id="sync-txt">Not set up</span>
+        </div>
+        <button onclick="showSettingsMod()" style="background:#F3F4F6;border:none;border-radius:8px;padding:4px 8px;cursor:pointer;font-size:13px;line-height:1" title="Sync Settings">⚙️</button>
+      </div>
+    </div>
+  </div>
+  <div class="scroll"><div class="main" id="main"></div></div>
+  <div class="bnav">
+    <button class="ni on" onclick="go('home')" id="t-home"><span class="ni-ic">⊞</span>Home</button>
+    <button class="ni" onclick="go('wallet')" id="t-wallet"><span class="ni-ic">💰</span>Wallet</button>
+    <button class="ni" onclick="go('expenses')" id="t-expenses"><span class="ni-ic">💸</span>Expenses</button>
+    <button class="ni" onclick="go('loans')" id="t-loans"><span class="ni-ic">🤝</span>Loans</button>
+    <button class="ni" onclick="go('budget')" id="t-budget"><span class="ni-ic">◎</span>Budget</button>
+    <button class="ni" onclick="go('invest')" id="t-invest"><span class="ni-ic">📈</span>Invest</button>
+  </div>
+  <button class="fab" id="fab" onclick="openFab()">+</button>
+</div>
+<div id="modal"></div>
+<div id="toast"></div>
+
+<script>
+// ══ PWA ═══════════════════════════════════════
+function genIcon(sz){
+  const c=document.createElement('canvas');c.width=c.height=sz;
+  const ctx=c.getContext('2d');const r=sz*.22;
+  const g=ctx.createLinearGradient(0,0,sz,sz);
+  g.addColorStop(0,'#16A34A');g.addColorStop(1,'#0D9488');
+  ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(sz-r,0);ctx.quadraticCurveTo(sz,0,sz,r);
+  ctx.lineTo(sz,sz-r);ctx.quadraticCurveTo(sz,sz,sz-r,sz);
+  ctx.lineTo(r,sz);ctx.quadraticCurveTo(0,sz,0,sz-r);
+  ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
+  ctx.fillStyle=g;ctx.fill();
+  ctx.fillStyle='#fff';ctx.font=`bold ${sz*.44}px -apple-system,sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('F',sz/2,sz/2+sz*.02);return c.toDataURL('image/png');
+}
+const mf={name:'FinTrack Pro',short_name:'FinTrack',display:'standalone',background_color:'#F5F5F0',theme_color:'#16A34A',orientation:'portrait',start_url:location.href,icons:[{src:genIcon(192),sizes:'192x192',type:'image/png'},{src:genIcon(512),sizes:'512x512',type:'image/png'}]};
+const ml=document.createElement('link');ml.rel='manifest';ml.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));document.head.appendChild(ml);
+const al=document.createElement('link');al.rel='apple-touch-icon';al.href=genIcon(180);document.head.appendChild(al);
+if('serviceWorker' in navigator){
+  const sw=`const C='ftpro-v2';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add('${location.href}')).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('${location.href}')))));`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'})),{scope:'./'});
+}
+
+// ══ CONSTANTS ════════════════════════════════
+const DEF_CATS=['Food','Transport','Housing','Shopping','Health','Entertainment','Other'];
+let CAT_COLORS={Food:'#F59E0B',Transport:'#3B82F6',Housing:'#8B5CF6',Shopping:'#EC4899',Health:'#EF4444',Entertainment:'#06B6D4',Other:'#9CA3AF'};
+let CAT_ICONS={Food:'🍽️',Transport:'🚗',Housing:'🏠',Shopping:'🛍️',Health:'💊',Entertainment:'🎬',Other:'📦'};
+const INST_CATS=['Mobile','Car','Motorcycle','Laptop','TV','Furniture','Other'];
+const INST_ICONS={Mobile:'📱',Car:'🚗',Motorcycle:'🏍️',Laptop:'💻',TV:'📺',Furniture:'🪑',Other:'📦'};
+const INST_COL={Mobile:'#3B82F6',Car:'#F59E0B',Motorcycle:'#EF4444',Laptop:'#8B5CF6',TV:'#06B6D4',Furniture:'#D97706',Other:'#9CA3AF'};
+const INC_SRCS=['Salary','Business','Freelance','Investment Return','Rent','Gift','Other'];
+const INC_ICONS={Salary:'💼',Business:'🏪',Freelance:'💻',['Investment Return']:'📈',Rent:'🏘️',Gift:'🎁',Other:'💵'};
+const INC_COLORS={Salary:'#16A34A',Business:'#D97706',Freelance:'#7C3AED',['Investment Return']:'#0D9488',Rent:'#2563EB',Gift:'#EC4899',Other:'#9CA3AF'};
+
+// ══ STATE ═════════════════════════════════════
+const NOW=new Date();
+const CUR_M=`${NOW.getFullYear()}-${String(NOW.getMonth()+1).padStart(2,'0')}`;
+const TODAY=NOW.toISOString().split('T')[0];
+
+let tab='home',lSub='personal',lFlt='all',cFlt='All',budM=CUR_M,editBC=null,walTrFlt='all',instMonthFlt={},selectedInst=null,nid=200;
+let expenses=[],pLoans=[],installments=[],investments=[],budgets={},categories=[...DEF_CATS];
+let incomes=[],bankInitBalance=0;
+let salaries=[],salaryPayments=[],instPayments=[];
+let githubToken='',gistId='',lastSynced='';
+
+// ══ SEED ══════════════════════════════════════
+const SE=[
+  {id:1,date:'2026-04-01',amount:25000,category:'Housing',description:'April Rent'},
+  {id:2,date:'2026-04-03',amount:4500,category:'Food',description:'Grocery store'},
+  {id:3,date:'2026-04-10',amount:2200,category:'Transport',description:'Fuel & Uber'},
+  {id:4,date:TODAY,amount:1800,category:'Food',description:'Dining out'},
+  {id:5,date:TODAY,amount:1200,category:'Health',description:'Pharmacy'},
+  {id:6,date:'2026-03-05',amount:25000,category:'Housing',description:'March Rent'},
+  {id:7,date:'2026-03-12',amount:3500,category:'Shopping',description:'Clothes'},
+];
+const SL=[
+  {id:1,person:'Ahmed',amount:15000,direction:'lent',dueDate:'2026-05-01',paid:false,notes:'Car repair'},
+  {id:2,person:'Sara',amount:8000,direction:'borrowed',dueDate:'2026-06-15',paid:false,notes:'Emergency'},
+  {id:3,person:'Bilal',amount:5000,direction:'lent',dueDate:'2026-04-20',paid:true,notes:'Books'},
+];
+const SI=[
+  {id:20,itemName:'Samsung Galaxy A55',category:'Mobile',monthlyPayment:8500,totalMonths:12,startDate:'2025-10-01',notes:'Jazz Cash'},
+  {id:21,itemName:'Honda CD 70',category:'Motorcycle',monthlyPayment:15000,totalMonths:18,startDate:'2025-06-01',notes:'Bank Alfalah'},
+];
+const SV=[
+  {id:30,businessName:'Ali General Store',ownerName:'Ali Hassan',amountInvested:100000,expectedReturn:120000,returnDate:'2026-12-01',status:'active',notes:'Grocery partnership'},
+  {id:31,businessName:'Farhan Textiles',ownerName:'Farhan Ahmed',amountInvested:50000,expectedReturn:60000,returnDate:'2026-09-01',status:'active',notes:'Cloth business'},
+];
+const SB={Food:10000,Transport:5000,Housing:25000,Shopping:8000,Health:4000,Entertainment:3000,Other:2000};
+const SIN=[
+  {id:100,date:'2026-04-15',amount:12000,source:'Freelance',notes:'Web project'},
+  {id:101,date:TODAY,amount:5000,source:'Business',notes:'Shop income'},
+];
+const SSAL=[
+  {id:150,companyName:'Tech Solutions Pvt.',amount:85000,startMonth:'2026-04',active:true,notes:'Main job'},
+  {id:151,companyName:'Freelance Studio',amount:40000,startMonth:'2026-04',active:true,notes:'Part time'},
+];
+const SPAY=[];
+
+// ══ STORAGE ═══════════════════════════════════
+function load(){
+  try{
+    expenses    =JSON.parse(localStorage.getItem('fp_exp'))||cp(SE);
+    pLoans      =JSON.parse(localStorage.getItem('fp_pl'))||cp(SL);
+    installments=JSON.parse(localStorage.getItem('fp_inst'))||cp(SI);
+    investments =JSON.parse(localStorage.getItem('fp_inv'))||cp(SV);
+    budgets     =JSON.parse(localStorage.getItem('fp_bud'))||cp(SB);
+    categories  =JSON.parse(localStorage.getItem('fp_cats'))||[...DEF_CATS];
+    CAT_ICONS   =JSON.parse(localStorage.getItem('fp_icons'))||CAT_ICONS;
+    CAT_COLORS  =JSON.parse(localStorage.getItem('fp_colors'))||CAT_COLORS;
+    incomes     =JSON.parse(localStorage.getItem('fp_inc'))||cp(SIN);
+    salaries    =JSON.parse(localStorage.getItem('fp_sal'))||cp(SSAL);
+    salaryPayments=JSON.parse(localStorage.getItem('fp_spay'))||cp(SPAY);
+    instPayments=JSON.parse(localStorage.getItem('fp_ipay'))||[];
+    bankInitBalance=parseFloat(localStorage.getItem('fp_bal')||'0');
+    nid         =parseInt(localStorage.getItem('fp_nid')||'200');
+    githubToken =localStorage.getItem('fp_gh_token')||'';
+    gistId      =localStorage.getItem('fp_gh_gist')||'';
+    lastSynced  =localStorage.getItem('fp_last_sync')||'';
+  }catch(e){
+    expenses=cp(SE);pLoans=cp(SL);installments=cp(SI);investments=cp(SV);
+    budgets=cp(SB);categories=[...DEF_CATS];incomes=cp(SIN);salaries=cp(SSAL);salaryPayments=cp(SPAY);
+  }
+}
+function save(){
+  localStorage.setItem('fp_exp',JSON.stringify(expenses));
+  localStorage.setItem('fp_pl',JSON.stringify(pLoans));
+  localStorage.setItem('fp_inst',JSON.stringify(installments));
+  localStorage.setItem('fp_inv',JSON.stringify(investments));
+  localStorage.setItem('fp_bud',JSON.stringify(budgets));
+  localStorage.setItem('fp_cats',JSON.stringify(categories));
+  localStorage.setItem('fp_icons',JSON.stringify(CAT_ICONS));
+  localStorage.setItem('fp_colors',JSON.stringify(CAT_COLORS));
+  localStorage.setItem('fp_inc',JSON.stringify(incomes));
+  localStorage.setItem('fp_sal',JSON.stringify(salaries));
+  localStorage.setItem('fp_spay',JSON.stringify(salaryPayments));
+  localStorage.setItem('fp_ipay',JSON.stringify(instPayments));
+  localStorage.setItem('fp_bal',bankInitBalance);
+  localStorage.setItem('fp_nid',nid);
+  syncToGist();
+}
+const cp=o=>JSON.parse(JSON.stringify(o));
+
+// ══ HELPERS ═══════════════════════════════════
+const fmt=n=>'PKR '+Math.round(n||0).toLocaleString('en-PK');
+const h=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function mExp(ym){return expenses.filter(e=>e.date&&e.date.startsWith(ym));}
+function mInc(ym){return incomes.filter(i=>i.date&&i.date.startsWith(ym));}
+function todayExp(){return expenses.filter(e=>e.date===TODAY);}
+function todayInc(){return incomes.filter(i=>i.date===TODAY);}
+function byCat(list){const m={};list.forEach(e=>{m[e.category]=(m[e.category]||0)+e.amount;});return Object.entries(m).map(([n,v])=>({name:n,value:v})).sort((a,b)=>b.value-a.value);}
+function paidM(inst){const s=new Date(inst.startDate);const m=(NOW.getFullYear()-s.getFullYear())*12+(NOW.getMonth()-s.getMonth());return Math.min(Math.max(0,m),inst.totalMonths);}
+
+// Generate all months for an installment
+function instMonths(inst){
+  const r=[];
+  const s=new Date(inst.startDate);
+  for(let i=0;i<inst.totalMonths;i++){
+    const d=new Date(s.getFullYear(),s.getMonth()+i,1);
+    const ym=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    r.push(ym);
+  }
+  return r;
+}
+function isInstPaid(instId,month){
+  return instPayments.some(p=>p.instId===instId&&p.month===month&&p.paid);
+}
+function toggleInstMonth(instId,month){
+  const existing=instPayments.find(p=>p.instId===instId&&p.month===month);
+  if(existing){
+    instPayments=instPayments.map(p=>p.instId===instId&&p.month===month?{...p,paid:!p.paid}:p);
+  } else {
+    instPayments.push({instId,month,paid:true});
+    toast('✅ Month marked as paid!');
+  }
+  save();render();
+}
+function setInstMF(instId,flt){
+  instMonthFlt={...instMonthFlt,[instId]:flt};render();
+}
+function openInst(id){selectedInst=id;instMonthFlt={...instMonthFlt,[id]:instMonthFlt[id]||'unpaid'};render();}
+function backToInst(){selectedInst=null;render();}
+function donut(cats,total){
+  if(!cats.length||!total)return '#EBEBEB';
+  let p=[],d=0;cats.forEach(c=>{const s=c.value/total*360;p.push(`${CAT_COLORS[c.name]||'#9CA3AF'} ${d}deg ${d+s}deg`);d+=s;});
+  return `conic-gradient(${p.join(',')})`;
+}
+function monthOpts(){
+  const usedMonths=new Set(expenses.map(e=>e.date?e.date.slice(0,7):'').filter(Boolean));
+  const r=[];const d=new Date();
+  for(let i=0;i<=11;i++){
+    const x=new Date(d.getFullYear(),d.getMonth()+i,1);
+    const ym=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`;
+    r.push({ym,label:x.toLocaleDateString('en-PK',{month:'long',year:'numeric'})});
+    usedMonths.delete(ym);
+  }
+  const pastWithData=[...usedMonths].sort((a,b)=>b.localeCompare(a)).map(ym=>{
+    const [y,m]=ym.split('-');
+    const x=new Date(parseInt(y),parseInt(m)-1,1);
+    return {ym,label:'📂 '+x.toLocaleDateString('en-PK',{month:'long',year:'numeric'})};
+  });
+  return [...r,...pastWithData];
+}
+function toast(msg,ms=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),ms);}
+
+// Computed bank balance
+function calcBalance(){
+  const totalIncome=incomes.reduce((s,i)=>s+i.amount,0);
+  const totalExp=expenses.reduce((s,e)=>s+e.amount,0);
+  return bankInitBalance+totalIncome-totalExp;
+}
+
+// ══ NAV ═══════════════════════════════════════
+function go(t){
+  tab=t;lSub='personal';lFlt='all';cFlt='All';editBC=null;walTrFlt='all';
+  document.querySelectorAll('.ni').forEach(b=>b.classList.remove('on'));
+  document.getElementById('t-'+t).classList.add('on');
+  const fab=document.getElementById('fab');
+  fab.style.display=['expenses','loans','invest','wallet'].includes(t)?'flex':'none';
+  document.querySelector('.scroll').scrollTop=0;
+  render();
+}
+function openFab(){
+  if(tab==='expenses')showExpMod();
+  else if(tab==='wallet')showIncomeMod();
+  else if(tab==='loans'&&lSub==='personal')showLoanMod();
+  else if(tab==='loans'&&lSub==='installment')showInstMod();
+  else if(tab==='invest')showInvMod();
+}
+
+// ══ RENDER ════════════════════════════════════
+function render(){
+  const el=document.getElementById('main');
+  if(tab==='home')el.innerHTML=rHome();
+  else if(tab==='wallet')el.innerHTML=rWallet();
+  else if(tab==='expenses')el.innerHTML=rExp();
+  else if(tab==='loans')el.innerHTML=rLoans();
+  else if(tab==='budget')el.innerHTML=rBudget();
+  else if(tab==='invest')el.innerHTML=rInvest();
+}
+
+// ══ HOME ══════════════════════════════════════
+function rHome(){
+  const tm=mExp(CUR_M);
+  const spent=tm.reduce((s,e)=>s+e.amount,0);
+  const totBud=Object.values(budgets).reduce((s,v)=>s+v,0);
+  const pct=Math.min(100,totBud?Math.round(spent/totBud*100):0);
+  const pc=pct>90?'#DC2626':pct>70?'#F59E0B':'#16A34A';
+
+  const balance=calcBalance();
+  const moInc=mInc(CUR_M).reduce((s,i)=>s+i.amount,0);
+  const lent=pLoans.filter(l=>l.direction==='lent'&&!l.paid).reduce((s,l)=>s+l.amount,0);
+  const borr=pLoans.filter(l=>l.direction==='borrowed'&&!l.paid).reduce((s,l)=>s+l.amount,0);
+  const instDebt=installments.reduce((s,i)=>{const unpaid=instMonths(i).filter(m=>!isInstPaid(i.id,m)).length;return s+unpaid*i.monthlyPayment;},0);
+  const instMo=installments.reduce((s,i)=>s+i.monthlyPayment,0);
+  const totalInv=investments.filter(i=>i.status==='active').reduce((s,i)=>s+i.amountInvested,0);
+
+  const todayList=todayExp();
+  const todayAmt=todayList.reduce((s,e)=>s+e.amount,0);
+  const todayIncAmt=todayInc().reduce((s,i)=>s+i.amount,0);
+  const pending=pLoans.filter(l=>!l.paid).slice(0,3);
+  const cats=byCat(tm);
+  const bColor=balance<0?'#DC2626':balance<10000?'#F59E0B':'#fff';
+
+  return `
+  <!-- Wallet Balance Banner -->
+  <div class="walcard" onclick="go('wallet')" style="cursor:pointer">
+    <div class="wallbl">💳 Total Bank Balance</div>
+    <div class="walbig" style="color:${bColor}">${fmt(balance)}</div>
+    <div class="walrow">
+      <div class="walstat">
+        <div class="wsl">Monthly Income</div>
+        <div class="wsv">+${fmt(moInc)}</div>
+      </div>
+      <div class="walstat">
+        <div class="wsl">Monthly Spent</div>
+        <div class="wsv">-${fmt(spent)}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Budget -->
+  <div style="margin-bottom:4px">
+    <div class="lbl">THIS MONTH'S SPENDING</div>
+    <div class="n1">${fmt(spent)}</div>
+    <div style="font-size:13px;color:${pc};font-weight:600;margin-top:2px">${pct}% of ${fmt(totBud)} budget</div>
+  </div>
+  <div class="bar"><div class="barf" style="width:${pct}%;background:${pc}"></div></div>
+  <div style="height:12px"></div>
+
+  <!-- Today Summary -->
+  <div class="g2">
+    <div class="card ct" style="margin-bottom:0">
+      <div class="lbl lt">TODAY INCOME</div>
+      <div class="n2" style="color:#0D9488">${fmt(todayIncAmt)}</div>
+      <div class="nt">${todayInc().length} entries</div>
+    </div>
+    <div class="card cr" style="margin-bottom:0">
+      <div class="lbl lr">TODAY EXPENSE</div>
+      <div class="n2" style="color:#DC2626">${fmt(todayAmt)}</div>
+      <div class="nt">${todayList.length} entries</div>
+    </div>
+  </div>
+  <div style="height:10px"></div>
+
+  <!-- Loans -->
+  <div class="g2">
+    <div class="card cg" style="margin-bottom:0">
+      <div class="lbl lg">OWED TO YOU</div>
+      <div class="n2" style="color:#15803D">${fmt(lent)}</div>
+      <div class="nt">Personal lent</div>
+    </div>
+    <div class="card cr" style="margin-bottom:0">
+      <div class="lbl lr">YOU OWE</div>
+      <div class="n2" style="color:#DC2626">${fmt(borr)}</div>
+      <div class="nt">Personal borrowed</div>
+    </div>
+  </div>
+  <div style="height:10px"></div>
+
+  <!-- Installments & Investments -->
+  <div class="g2">
+    <div class="card cb" style="margin-bottom:0">
+      <div class="lbl lb">INSTALLMENTS</div>
+      <div class="n3" style="color:#2563EB">${fmt(instDebt)}</div>
+      <div class="nt">Monthly: ${fmt(instMo)}</div>
+    </div>
+    <div class="card cy" style="margin-bottom:0">
+      <div class="lbl ly">INVESTED</div>
+      <div class="n3" style="color:#D97706">${fmt(totalInv)}</div>
+      <div class="nt">Active</div>
+    </div>
+  </div>
+  <div style="height:10px"></div>
+
+  <!-- Today's Expenses Detail -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${todayList.length?10:4}px">
+      <div style="font-weight:700;font-size:14px">📅 Today's Expenses</div>
+      <div style="font-weight:700;font-size:12px;color:${todayList.length?'#DC2626':'#9CA3AF'}">${todayList.length?fmt(todayAmt):'—'}</div>
+    </div>
+    ${todayList.length===0
+      ?`<div style="text-align:center;padding:6px 0;color:#9CA3AF;font-size:13px">🎉 No expenses today!</div>`
+      :todayList.map(e=>`<div class="trow">
+          <div><div style="font-weight:600;font-size:13px">${h(e.description)}</div><div style="font-size:11px;color:#9CA3AF">${e.category}</div></div>
+          <div style="font-weight:700;font-size:13px;color:#DC2626">-${fmt(e.amount)}</div>
+        </div>`).join('')}
+  </div>
+
+  <!-- Today's Income Detail -->
+  ${todayInc().length?`
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-weight:700;font-size:14px">💰 Today's Income</div>
+      <div style="font-weight:700;font-size:12px;color:#0D9488">+${fmt(todayIncAmt)}</div>
+    </div>
+    ${todayInc().map(i=>`<div class="trow">
+        <div><div style="font-weight:600;font-size:13px">${h(i.source)}</div><div style="font-size:11px;color:#9CA3AF">${h(i.notes||'—')}</div></div>
+        <div style="font-weight:700;font-size:13px;color:#16A34A">+${fmt(i.amount)}</div>
+      </div>`).join('')}
+  </div>`:''}
+
+  <!-- Spending breakdown -->
+  ${cats.length?`
+  <div class="card">
+    <div style="font-weight:700;font-size:14px;margin-bottom:11px">This Month Breakdown</div>
+    <div class="dw">
+      <div class="dn" style="background:${donut(cats,spent)}"></div>
+      <div class="leg">
+        ${cats.map(c=>`<div class="li">
+          <div class="ld" style="background:${CAT_COLORS[c.name]||'#9CA3AF'}"></div>
+          <span style="color:#6B7280;flex:1">${c.name}</span>
+          <span style="font-weight:600">${fmt(c.value)}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`:''}
+
+  ${pending.length?`
+  <div class="card">
+    <div style="font-weight:700;font-size:14px;margin-bottom:9px">🤝 Pending Loans</div>
+    ${pending.map(l=>`<div class="trow">
+      <div><div style="font-weight:600;font-size:13px">${h(l.person)}</div><div style="font-size:11px;color:#9CA3AF">${l.dueDate?'Due '+l.dueDate:'No due date'}</div></div>
+      <div style="text-align:right">
+        <div style="font-weight:700;color:${l.direction==='lent'?'#16A34A':'#DC2626'};font-size:13px">${fmt(l.amount)}</div>
+        <div style="font-size:10px;color:${l.direction==='lent'?'#16A34A':'#DC2626'}">${l.direction==='lent'?'Lent':'Borrowed'}</div>
+      </div>
+    </div>`).join('')}
+  </div>`:''}`;
+}
+
+// ══ WALLET ════════════════════════════════════
+function rWallet(){
+  const balance=calcBalance();
+  const totalIncome=incomes.reduce((s,i)=>s+i.amount,0);
+  const totalExp=expenses.reduce((s,e)=>s+e.amount,0);
+  const moInc=mInc(CUR_M).reduce((s,i)=>s+i.amount,0);
+  const moExp=mExp(CUR_M).reduce((s,e)=>s+e.amount,0);
+  const todayI=todayInc().reduce((s,i)=>s+i.amount,0);
+  const todayE=todayExp().reduce((s,e)=>s+e.amount,0);
+  const moNet=moInc-moExp;
+  const bColor=balance<0?'#FF6B6B':balance<10000?'#FFC107':'#fff';
+
+  // Build merged transaction list
+  const allTx=[
+    ...incomes.map(i=>({...i,txType:'income'})),
+    ...expenses.map(e=>({...e,txType:'expense'}))
+  ].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  const filtered=walTrFlt==='income'?allTx.filter(t=>t.txType==='income')
+    :walTrFlt==='expense'?allTx.filter(t=>t.txType==='expense')
+    :allTx;
+
+  // Group by date
+  const grouped={};
+  filtered.forEach(t=>{
+    if(!grouped[t.date])grouped[t.date]=[];
+    grouped[t.date].push(t);
+  });
+  const sortedDates=Object.keys(grouped).sort((a,b)=>new Date(b)-new Date(a));
+
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="stitle" style="margin:0">💳 Wallet</div>
+    <div style="display:flex;gap:6px">
+      <button class="btntb" onclick="showSetBalanceMod()" style="font-size:12px;padding:6px 11px">⚙️ Set Balance</button>
+      <button class="btnt" onclick="showIncomeMod()">+ Income</button>
+    </div>
+  </div>
+
+  <!-- Balance Card -->
+  <div class="walcard">
+    <div class="wallbl">💳 Total Bank Balance</div>
+    <div class="walbig" style="color:${bColor}">${fmt(balance)}</div>
+    <div style="font-size:11px;opacity:.7;margin-top:4px;position:relative;z-index:1">Starting balance: ${fmt(bankInitBalance)}</div>
+    <div class="walrow">
+      <div class="walstat">
+        <div class="wsl">Total Income</div>
+        <div class="wsv">+${fmt(totalIncome)}</div>
+      </div>
+      <div class="walstat">
+        <div class="wsl">Total Spent</div>
+        <div class="wsv">-${fmt(totalExp)}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today & Monthly Stats -->
+  <div class="g3">
+    <div class="card ct" style="margin-bottom:0;padding:10px">
+      <div style="font-size:9px;color:#0D9488;font-weight:700;text-transform:uppercase;margin-bottom:2px">TODAY IN</div>
+      <div style="font-size:13px;font-weight:800;color:#0D9488">+${fmt(todayI)}</div>
+    </div>
+    <div class="card cr" style="margin-bottom:0;padding:10px">
+      <div style="font-size:9px;color:#DC2626;font-weight:700;text-transform:uppercase;margin-bottom:2px">TODAY OUT</div>
+      <div style="font-size:13px;font-weight:800;color:#DC2626">-${fmt(todayE)}</div>
+    </div>
+    <div class="card ${todayI-todayE>=0?'cg':'cr'}" style="margin-bottom:0;padding:10px">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;margin-bottom:2px;color:${todayI-todayE>=0?'#16A34A':'#DC2626'}">TODAY NET</div>
+      <div style="font-size:13px;font-weight:800;color:${todayI-todayE>=0?'#16A34A':'#DC2626'}">${todayI-todayE>=0?'+':''}${fmt(todayI-todayE)}</div>
+    </div>
+  </div>
+  <div style="height:8px"></div>
+  <div class="g3">
+    <div class="card ct" style="margin-bottom:0;padding:10px">
+      <div style="font-size:9px;color:#0D9488;font-weight:700;text-transform:uppercase;margin-bottom:2px">MONTHLY IN</div>
+      <div style="font-size:13px;font-weight:800;color:#0D9488">+${fmt(moInc)}</div>
+    </div>
+    <div class="card cr" style="margin-bottom:0;padding:10px">
+      <div style="font-size:9px;color:#DC2626;font-weight:700;text-transform:uppercase;margin-bottom:2px">MONTHLY OUT</div>
+      <div style="font-size:13px;font-weight:800;color:#DC2626">-${fmt(moExp)}</div>
+    </div>
+    <div class="card ${moNet>=0?'cg':'cr'}" style="margin-bottom:0;padding:10px">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;margin-bottom:2px;color:${moNet>=0?'#16A34A':'#DC2626'}">MONTHLY NET</div>
+      <div style="font-size:13px;font-weight:800;color:${moNet>=0?'#16A34A':'#DC2626'}">${moNet>=0?'+':''}${fmt(moNet)}</div>
+    </div>
+  </div>
+  <div style="height:12px"></div>
+
+  <!-- Monthly Salaries Section -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div style="font-weight:700;font-size:15px">💼 Monthly Salaries</div>
+    <button class="btnt" onclick="showSalaryMod()" style="font-size:12px;padding:6px 12px">+ Add Salary</button>
+  </div>
+
+  ${salaries.length===0?`<div class="card" style="text-align:center;padding:18px;color:#9CA3AF;font-size:13px">No salaries added yet. Tap + Add Salary.</div>`
+  :salaries.map(sal=>{
+    const months=salaryMonths(sal);
+    const paidCount=months.filter(m=>isSalPaid(sal.id,m)).length;
+    const totalSalIncome=paidCount*sal.amount;
+    return `
+    <div class="card" style="margin-bottom:12px">
+      <!-- Salary Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-weight:700;font-size:15px">🏢 ${h(sal.companyName)}</div>
+          <div style="font-size:12px;color:#9CA3AF;margin-top:2px">${sal.notes||''} · Since ${sal.startMonth}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-weight:800;font-size:16px;color:#16A34A">${fmt(sal.amount)}<span style="font-size:10px;color:#9CA3AF">/mo</span></div>
+          <div style="display:flex;gap:5px;margin-top:4px;justify-content:flex-end">
+            <button class="btne" style="padding:4px 8px;font-size:11px" onclick="showSalaryMod(${sal.id})">✏️</button>
+            <button class="btnd" style="padding:4px 8px;font-size:11px" onclick="delSalary(${sal.id})">🗑️</button>
+          </div>
+        </div>
+      </div>
+      <!-- Summary bar -->
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div style="background:#F0FDF4;border-radius:8px;padding:7px 10px;flex:1;text-align:center">
+          <div style="font-size:9px;color:#16A34A;font-weight:700">RECEIVED</div>
+          <div style="font-size:13px;font-weight:800;color:#16A34A">${paidCount} months</div>
+        </div>
+        <div style="background:#FEF2F2;border-radius:8px;padding:7px 10px;flex:1;text-align:center">
+          <div style="font-size:9px;color:#DC2626;font-weight:700">PENDING</div>
+          <div style="font-size:13px;font-weight:800;color:#DC2626">${months.length-paidCount} months</div>
+        </div>
+        <div style="background:#F0FDF4;border-radius:8px;padding:7px 10px;flex:1;text-align:center">
+          <div style="font-size:9px;color:#0D9488;font-weight:700">TOTAL IN</div>
+          <div style="font-size:12px;font-weight:800;color:#0D9488">${fmt(totalSalIncome)}</div>
+        </div>
+      </div>
+      <!-- Month by month list -->
+      ${months.map(ym=>{
+        const paid=isSalPaid(sal.id,ym);
+        const [y,m]=ym.split('-');
+        const label=new Date(parseInt(y),parseInt(m)-1,1).toLocaleDateString('en-PK',{month:'long',year:'numeric'});
+        const isCurrent=ym===CUR_M;
+        return `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F5F5F5">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">${paid?'✅':'⏳'}</span>
+            <div>
+              <div style="font-size:13px;font-weight:600">${label}${isCurrent?' <span style="font-size:10px;background:#EFF6FF;color:#2563EB;padding:1px 6px;border-radius:99px;font-weight:600">Current</span>':''}</div>
+              ${paid?`<div style="font-size:10px;color:#16A34A;font-weight:600">Received ✓</div>`:`<div style="font-size:10px;color:#F59E0B;font-weight:600">Not received</div>`}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-weight:700;font-size:13px;color:${paid?'#16A34A':'#9CA3AF'}">${fmt(sal.amount)}</span>
+            <button onclick="toggleSalMonth(${sal.id},'${ym}')" style="padding:5px 10px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:700;background:${paid?'#FEF2F2':'#F0FDF4'};color:${paid?'#DC2626':'#16A34A'}">${paid?'Undo':'Mark Paid'}</button>
+          </div>
+        </div>`;}).join('')}
+    </div>`;}).join('')}
+
+  <div style="height:4px"></div>
+
+  <!-- One-time Income sources this month -->
+  ${(() => {
+    const src={};
+    mInc(CUR_M).forEach(i=>{src[i.source]=(src[i.source]||0)+i.amount;});
+    const srcs=Object.entries(src).sort((a,b)=>b[1]-a[1]);
+    return srcs.length?`
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px">📊 Other Income This Month</div>
+      ${srcs.map(([s,v])=>`<div class="trow">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">${INC_ICONS[s]||'💵'}</span>
+          <span style="font-weight:600;font-size:13px">${s}</span>
+        </div>
+        <span style="font-weight:700;color:#16A34A;font-size:13px">+${fmt(v)}</span>
+      </div>`).join('')}
+    </div>`:'';
+  })()}
+
+  <!-- Transaction History -->
+  <div style="font-weight:700;font-size:14px;margin-bottom:10px">📋 Transaction History</div>
+  <div class="pills">
+    <button class="pill ${walTrFlt==='all'?'on':''}" onclick="setWTF('all')">All</button>
+    <button class="pill ${walTrFlt==='income'?'ton':''}" onclick="setWTF('income')">💚 Income</button>
+    <button class="pill ${walTrFlt==='expense'?'ron':''}" onclick="setWTF('expense')">❤️ Expense</button>
+  </div>
+
+  ${sortedDates.length===0?`<div class="emp"><i>📋</i><p>No transactions yet.</p></div>`
+    :sortedDates.map(date=>{
+      const txs=grouped[date];
+      const dayInc=txs.filter(t=>t.txType==='income').reduce((s,t)=>s+t.amount,0);
+      const dayExp=txs.filter(t=>t.txType==='expense').reduce((s,t)=>s+t.amount,0);
+      const isToday=date===TODAY;
+      return `
+      <div style="margin-bottom:4px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div style="font-size:12px;font-weight:700;color:#6B7280">${isToday?'📅 Today':date}</div>
+          <div style="font-size:11px">
+            ${dayInc>0?`<span style="color:#16A34A;font-weight:600">+${fmt(dayInc)}</span>`:''}
+            ${dayInc>0&&dayExp>0?` <span style="color:#9CA3AF">·</span> `:''}
+            ${dayExp>0?`<span style="color:#DC2626;font-weight:600">-${fmt(dayExp)}</span>`:''}
+          </div>
+        </div>
+        <div class="card" style="padding:8px 12px">
+          ${txs.map(t=>`
+          <div class="tx-item">
+            <div class="tx-ic" style="background:${t.txType==='income'?(INC_COLORS[t.source]||'#9CA3AF')+'18':(CAT_COLORS[t.category]||'#9CA3AF')+'18'}">
+              ${t.txType==='income'?(INC_ICONS[t.source]||'💵'):(CAT_ICONS[t.category]||'📦')}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:600;font-size:13px">${h(t.txType==='income'?t.source:t.description)}</div>
+              <div style="font-size:11px;color:#9CA3AF">${h(t.txType==='income'?(t.notes||t.type):(t.category))}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-weight:700;font-size:13px;color:${t.txType==='income'?'#16A34A':'#DC2626'}">${t.txType==='income'?'+':'-'}${fmt(t.amount)}</div>
+              ${t.txType==='income'
+                ?`<button class="btnd" style="padding:2px 6px;font-size:10px;margin-top:2px" onclick="delIncome(${t.id})">🗑️</button>`
+                :`<button class="btnd" style="padding:2px 6px;font-size:10px;margin-top:2px" onclick="delExp(${t.id})">🗑️</button>`}
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+function setWTF(f){walTrFlt=f;render();}
+
+// ══ EXPENSES ══════════════════════════════════
+function rExp(){
+  const sorted=[...expenses].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const filtered=cFlt==='All'?sorted:sorted.filter(e=>e.category===cFlt);
+  const tm=mExp(CUR_M);
+  let budBar='';
+  if(cFlt!=='All'&&budgets[cFlt]){
+    const s=tm.filter(e=>e.category===cFlt).reduce((a,e)=>a+e.amount,0);
+    const p=Math.min(100,Math.round(s/budgets[cFlt]*100));
+    const pc=p>90?'#DC2626':p>70?'#F59E0B':'#16A34A';
+    budBar=`<div class="card cg" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><b>${cFlt} Budget (This Month)</b><span>${fmt(s)} / ${fmt(budgets[cFlt])}</span></div>
+      <div class="bar"><div class="barf" style="width:${p}%;background:${pc}"></div></div>
+    </div>`;
+  }
+  const list=filtered.length===0
+    ?`<div class="emp"><i>💸</i><p>No expenses yet. Tap + to add.</p></div>`
+    :filtered.map(e=>`<div class="item">
+      <div class="ir">
+        <div class="ibox" style="background:${CAT_COLORS[e.category]||'#9CA3AF'}18">${CAT_ICONS[e.category]||'📦'}</div>
+        <div style="flex:1;min-width:0"><div class="inm">${h(e.description)}</div><div class="imt">${e.category} · ${e.date}</div></div>
+        <div style="font-weight:700;font-size:14px;text-align:right;color:#DC2626">-${fmt(e.amount)}</div>
+      </div>
+      <div class="ar">
+        <button class="btne" onclick="showExpMod(${e.id})">✏️ Edit</button>
+        <button class="btnd" onclick="delExp(${e.id})">🗑️ Delete</button>
+      </div>
+    </div>`).join('');
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="stitle" style="margin:0">Expenses</div>
+    <button class="btnt" onclick="showExpMod()">+ Add</button>
+  </div>
+  <div class="pills">
+    <button class="pill ${cFlt==='All'?'on':''}" onclick="setCat('All')">All</button>
+    ${categories.map(c=>`<button class="pill ${cFlt===c?'on':''}" onclick="setCat('${c}')">${CAT_ICONS[c]||'📦'} ${c}</button>`).join('')}
+  </div>
+  ${budBar}${list}`;
+}
+function setCat(f){cFlt=f;render();}
+
+// ══ LOANS ═════════════════════════════════════
+function rLoans(){
+  const lent=pLoans.filter(l=>l.direction==='lent'&&!l.paid).reduce((s,l)=>s+l.amount,0);
+  const borr=pLoans.filter(l=>l.direction==='borrowed'&&!l.paid).reduce((s,l)=>s+l.amount,0);
+  const instDebt=installments.reduce((s,i)=>{const unpaid=instMonths(i).filter(m=>!isInstPaid(i.id,m)).length;return s+unpaid*i.monthlyPayment;},0);
+  const instMo=installments.reduce((s,i)=>s+i.monthlyPayment,0);
+  let content='';
+
+  if(lSub==='personal'){
+    const filtered=pLoans.filter(l=>lFlt==='lent'?l.direction==='lent':lFlt==='borrowed'?l.direction==='borrowed':true);
+    const cards=filtered.length===0
+      ?`<div class="emp"><i>🤝</i><p>No loans here.</p></div>`
+      :filtered.map(l=>`<div class="item" style="${l.paid?'opacity:.6':''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <span class="inm">${h(l.person)}</span>
+            <span class="bdg ${l.direction==='lent'?'bdgg':'bdgr'}">${l.direction==='lent'?'Lent':'Borrowed'}</span>
+            ${l.paid?'<span class="bdg bdgy">Settled</span>':''}
+            <div class="imt" style="margin-top:4px">${h(l.notes||'—')}${l.dueDate?' · Due '+l.dueDate:''}</div>
+          </div>
+          <div style="font-weight:800;font-size:14px;color:${l.direction==='lent'?'#16A34A':'#DC2626'}">${fmt(l.amount)}</div>
+        </div>
+        <div class="ar">
+          <button class="btno ${l.paid?'on':''}" onclick="togglePaid(${l.id})">${l.paid?'✓ Settled':'Mark Settled'}</button>
+          <button class="btne" onclick="showLoanMod(${l.id})">✏️</button>
+          <button class="btnd" onclick="delLoan(${l.id})">🗑️</button>
+        </div>
+      </div>`).join('');
+
+    content=`
+    <div class="g2">
+      <div class="card cg" style="margin-bottom:0;cursor:pointer;border:${lFlt==='lent'?'2px solid #16A34A':'1px solid #BBF7D0'}" onclick="setLF('lent')">
+        <div class="lbl lg">OWED TO YOU ${lFlt==='lent'?'▼':''}</div>
+        <div class="n2" style="color:#15803D">${fmt(lent)}</div>
+        <div class="nt" style="color:${lFlt==='lent'?'#16A34A':'#9CA3AF'}">${lFlt==='lent'?'Showing below ↓':'Tap to filter'}</div>
+      </div>
+      <div class="card cr" style="margin-bottom:0;cursor:pointer;border:${lFlt==='borrowed'?'2px solid #DC2626':'1px solid #FECACA'}" onclick="setLF('borrowed')">
+        <div class="lbl lr">YOU OWE ${lFlt==='borrowed'?'▼':''}</div>
+        <div class="n2" style="color:#DC2626">${fmt(borr)}</div>
+        <div class="nt" style="color:${lFlt==='borrowed'?'#DC2626':'#9CA3AF'}">${lFlt==='borrowed'?'Showing below ↓':'Tap to filter'}</div>
+      </div>
+    </div>
+    <div style="height:8px"></div>
+    <div class="pills">
+      <button class="pill ${lFlt==='all'?'on':''}" onclick="setLF('all')">All</button>
+      <button class="pill ${lFlt==='lent'?'on':''}" onclick="setLF('lent')">💚 Owed to Me</button>
+      <button class="pill ${lFlt==='borrowed'?'ron':''}" onclick="setLF('borrowed')">❤️ I Owe</button>
+    </div>
+    ${cards}`;
+  } else {
+    // ── Detail view: one installment's months ──
+    if(selectedInst!==null){
+      const i=installments.find(x=>x.id===selectedInst);
+      if(!i){selectedInst=null;}
+      else{
+        const allMonths=instMonths(i);
+        const paidMonths=allMonths.filter(m=>isInstPaid(i.id,m));
+        const unpaidMonths=allMonths.filter(m=>!isInstPaid(i.id,m));
+        const paidAmt=paidMonths.length*i.monthlyPayment;
+        const remAmt=unpaidMonths.length*i.monthlyPayment;
+        const total=i.totalMonths*i.monthlyPayment;
+        const pct=Math.round(paidMonths.length/i.totalMonths*100);
+        const done=unpaidMonths.length===0;
+        const flt=instMonthFlt[i.id]||'unpaid';
+        const shownMonths=flt==='paid'?paidMonths:flt==='unpaid'?unpaidMonths:allMonths;
+
+        const monthRow=(ym)=>{
+          const isPaid=isInstPaid(i.id,ym);
+          const [y,m2]=ym.split('-');
+          const label=new Date(parseInt(y),parseInt(m2)-1,1).toLocaleDateString('en-PK',{month:'long',year:'numeric'});
+          const isCur=ym===CUR_M;
+          const isFuture=ym>CUR_M;
+          return `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid #F5F5F5;background:${isPaid?'#F0FDF4':isFuture?'#FAFAFA':'#fff'}">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;border-radius:10px;background:${isPaid?'#DCFCE7':isFuture?'#F3F4F6':'#FEF9C3'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+                ${isPaid?'✅':isFuture?'🔒':'⏳'}
+              </div>
+              <div>
+                <div style="font-size:14px;font-weight:600;color:#111">${label}</div>
+                <div style="font-size:11px;font-weight:600;margin-top:1px;color:${isPaid?'#16A34A':isFuture?'#9CA3AF':'#D97706'}">
+                  ${isPaid?'Paid ✓':isFuture?'Upcoming':'Pending'}
+                  ${isCur?'<span style="margin-left:5px;font-size:9px;background:#2563EB;color:#fff;padding:1px 6px;border-radius:99px">Current</span>':''}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <span style="font-weight:800;font-size:14px;color:${isPaid?'#16A34A':'#374151'}">${fmt(i.monthlyPayment)}</span>
+              <button onclick="toggleInstMonth(${i.id},'${ym}')" style="padding:7px 12px;border-radius:9px;border:none;cursor:pointer;font-size:12px;font-weight:700;min-width:72px;background:${isPaid?'#FEE2E2':'#DCFCE7'};color:${isPaid?'#DC2626':'#16A34A'}">
+                ${isPaid?'Undo':'Mark Paid'}
+              </button>
+            </div>
+          </div>`;
+        };
+
+        content=`
+        <!-- Back button + title -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <button onclick="backToInst()" style="background:#F3F4F6;border:none;border-radius:10px;padding:8px 12px;cursor:pointer;font-size:14px;font-weight:600;color:#374151;display:flex;align-items:center;gap:5px">← Back</button>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h(i.itemName)}</div>
+            <div style="font-size:11px;color:#9CA3AF">${i.category} · ${fmt(i.monthlyPayment)}/mo</div>
+          </div>
+          <button class="btne" style="padding:6px 10px;font-size:13px;flex-shrink:0" onclick="showInstMod(${i.id})">✏️</button>
+        </div>
+
+        <!-- Progress card -->
+        <div style="background:linear-gradient(135deg,#1D4ED8,#2563EB);border-radius:16px;padding:16px;margin-bottom:14px;color:#fff">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-bottom:14px">
+            <div style="text-align:center;border-right:1px solid rgba(255,255,255,.2)">
+              <div style="font-size:9px;opacity:.75;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Paid</div>
+              <div style="font-size:22px;font-weight:800;margin-top:2px">${paidMonths.length}</div>
+              <div style="font-size:10px;opacity:.75">months</div>
+            </div>
+            <div style="text-align:center;border-right:1px solid rgba(255,255,255,.2)">
+              <div style="font-size:9px;opacity:.75;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Left</div>
+              <div style="font-size:22px;font-weight:800;margin-top:2px;color:${done?'#86EFAC':'#FDE68A'}">${unpaidMonths.length}</div>
+              <div style="font-size:10px;opacity:.75">months</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:9px;opacity:.75;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Total</div>
+              <div style="font-size:22px;font-weight:800;margin-top:2px">${i.totalMonths}</div>
+              <div style="font-size:10px;opacity:.75">months</div>
+            </div>
+          </div>
+          <!-- Progress bar -->
+          <div style="height:8px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;margin-bottom:8px">
+            <div style="height:100%;width:${pct}%;background:${done?'#4ADE80':'#A3E635'};border-radius:99px;transition:width .5s ease"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;opacity:.8">
+            <span>Paid: ${fmt(paidAmt)}</span>
+            <span>${pct}% complete</span>
+            <span>Left: ${fmt(remAmt)}</span>
+          </div>
+        </div>
+
+        <!-- Tab switcher -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+          <button onclick="setInstMF(${i.id},'unpaid')" style="padding:10px 6px;border-radius:11px;border:2px solid ${flt==='unpaid'?'#F59E0B':'transparent'};cursor:pointer;font-weight:700;font-size:12px;background:${flt==='unpaid'?'#FFFBEB':'#F5F5F0'};color:${flt==='unpaid'?'#D97706':'#6B7280'}">
+            ⏳ Unpaid<br><span style="font-size:16px;font-weight:800">${unpaidMonths.length}</span>
+          </button>
+          <button onclick="setInstMF(${i.id},'paid')" style="padding:10px 6px;border-radius:11px;border:2px solid ${flt==='paid'?'#16A34A':'transparent'};cursor:pointer;font-weight:700;font-size:12px;background:${flt==='paid'?'#F0FDF4':'#F5F5F0'};color:${flt==='paid'?'#16A34A':'#6B7280'}">
+            ✅ Paid<br><span style="font-size:16px;font-weight:800">${paidMonths.length}</span>
+          </button>
+          <button onclick="setInstMF(${i.id},'all')" style="padding:10px 6px;border-radius:11px;border:2px solid ${flt==='all'?'#2563EB':'transparent'};cursor:pointer;font-weight:700;font-size:12px;background:${flt==='all'?'#EFF6FF':'#F5F5F0'};color:${flt==='all'?'#2563EB':'#6B7280'}">
+            📋 All<br><span style="font-size:16px;font-weight:800">${i.totalMonths}</span>
+          </button>
+        </div>
+
+        <!-- Month list -->
+        <div style="background:#fff;border-radius:15px;border:1px solid #EBEBEB;overflow:hidden">
+          ${shownMonths.length===0
+            ?`<div style="text-align:center;padding:32px 20px;color:#9CA3AF">
+                <div style="font-size:36px;margin-bottom:10px">${flt==='paid'?'🎯':'🎉'}</div>
+                <div style="font-weight:600;font-size:14px">${flt==='paid'?'No paid months yet':'All months paid!'}</div>
+                <div style="font-size:12px;margin-top:4px">${flt==='paid'?'Tap "Mark Paid" on unpaid months':'Great job! 🏆'}</div>
+              </div>`
+            :shownMonths.map(ym=>monthRow(ym)).join('')}
+        </div>`;
+
+        return `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="stitle" style="margin:0">Loans & Installments</div>
+          <button class="btnt" onclick="showInstMod()">+ Add</button>
+        </div>
+        <div class="st2">
+          <button class="st" onclick="setLS('personal')">🤝 Personal</button>
+          <button class="st on">📦 Installments</button>
+        </div>
+        ${content}`;
+      }
+    }
+
+    // ── Summary list view ──
+    const cards=installments.length===0
+      ?`<div class="emp"><i>📦</i><p>No installments yet.<br>Tap + to add one.</p></div>`
+      :installments.map(i=>{
+        const allMonths=instMonths(i);
+        const paidMonths=allMonths.filter(m=>isInstPaid(i.id,m));
+        const unpaidMonths=allMonths.filter(m=>!isInstPaid(i.id,m));
+        const pct=Math.round(paidMonths.length/i.totalMonths*100);
+        const done=unpaidMonths.length===0;
+        const nextDue=unpaidMonths.find(m=>m<=CUR_M)||unpaidMonths[0];
+
+        return `
+        <div onclick="openInst(${i.id})" style="background:#fff;border-radius:15px;padding:14px;border:1px solid #EBEBEB;margin-bottom:10px;cursor:pointer;active:opacity:.8">
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">
+            <div style="width:46px;height:46px;border-radius:13px;background:${INST_COL[i.category]||'#9CA3AF'}18;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${INST_ICONS[i.category]||'📦'}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h(i.itemName)}</div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:2px">${i.category}${i.notes?' · '+h(i.notes):''}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              ${done
+                ?`<span style="background:#DCFCE7;color:#16A34A;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px">✓ Done</span>`
+                :`<span style="background:#EFF6FF;color:#2563EB;font-size:12px;font-weight:800">${fmt(i.monthlyPayment)}<span style="font-size:9px;color:#9CA3AF">/mo</span></span>`}
+              <div style="font-size:10px;color:#9CA3AF;margin-top:3px">Tap for details →</div>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#9CA3AF;margin-bottom:5px">
+            <span><b style="color:#16A34A">${paidMonths.length}</b> paid</span>
+            <span style="font-weight:700;color:${done?'#16A34A':'#374151'}">${pct}%</span>
+            <span><b style="color:${done?'#16A34A':'#DC2626'}">${unpaidMonths.length}</b> left</span>
+          </div>
+          <div style="height:7px;background:#E5E7EB;border-radius:99px;overflow:hidden;margin-bottom:8px">
+            <div style="height:100%;width:${pct}%;background:${done?'#16A34A':pct>70?'#F59E0B':'#3B82F6'};border-radius:99px;transition:width .5s ease"></div>
+          </div>
+
+          <!-- Bottom row: next due + total -->
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:11px;color:#6B7280">
+              ${done?'🎉 Fully paid!'
+                :nextDue
+                  ?`⏳ Next due: <b style="color:#D97706">${new Date(parseInt(nextDue.split('-')[0]),parseInt(nextDue.split('-')[1])-1,1).toLocaleDateString('en-PK',{month:'short',year:'numeric'})}</b>`
+                  :''}
+            </div>
+            <div style="font-size:11px;color:#9CA3AF">${i.totalMonths} months · ${fmt(i.monthlyPayment*i.totalMonths)}</div>
+          </div>
+        </div>`;}).join('');
+
+    content=`
+    <div class="g2">
+      <div class="card cb" style="margin-bottom:0;text-align:center">
+        <div class="lbl lb">TOTAL REMAINING</div>
+        <div class="n2" style="color:#2563EB">${fmt(instDebt)}</div>
+      </div>
+      <div class="card" style="margin-bottom:0;text-align:center">
+        <div class="lbl">MONTHLY DUES</div>
+        <div class="n2">${fmt(instMo)}</div>
+      </div>
+    </div><div style="height:12px"></div>${cards}`;
+  }
+
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="stitle" style="margin:0">Loans & Installments</div>
+    <button class="btnt" onclick="lSub==='personal'?showLoanMod():showInstMod()">+ Add</button>
+  </div>
+  <div class="st2">
+    <button class="st ${lSub==='personal'?'on':''}" onclick="setLS('personal')">🤝 Personal</button>
+    <button class="st ${lSub==='installment'?'on':''}" onclick="setLS('installment')">📦 Installments</button>
+  </div>
+  ${content}`;
+}
+function setLS(s){lSub=s;lFlt='all';selectedInst=null;render();}
+function setLF(f){lFlt=lFlt===f?'all':f;render();}
+
+// ══ BUDGET ════════════════════════════════════
+function rBudget(){
+  const tm=mExp(budM);
+  const totBud=Object.values(budgets).reduce((s,v)=>s+v,0);
+  const totSpent=tm.reduce((s,e)=>s+e.amount,0);
+  const opts=monthOpts();
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+    <div class="stitle" style="margin:0">Budget</div>
+    <button class="btnt" onclick="showAddCatMod()" style="background:#6B7280;font-size:12px;padding:6px 12px">+ Category</button>
+  </div>
+  <div style="font-size:12px;color:#9CA3AF;margin-bottom:10px">Budget: ${fmt(totBud)} · Spent: ${fmt(totSpent)}</div>
+  <select class="ms" onchange="setBM(this.value)">
+    ${opts.map(o=>`<option value="${o.ym}" ${o.ym===budM?'selected':''}>${o.label}${o.ym===CUR_M?' (Current)':''}</option>`).join('')}
+  </select>
+  ${categories.map(cat=>{
+    const spent=tm.filter(e=>e.category===cat).reduce((s,e)=>s+e.amount,0);
+    const bud=budgets[cat]||0;
+    const pct=bud>0?Math.min(100,Math.round(spent/bud*100)):0;
+    const over=spent>bud&&bud>0;
+    const pc=over?'#DC2626':pct>80?'#F59E0B':'#16A34A';
+    const isDefault=DEF_CATS.includes(cat);
+    const edRow=editBC===cat
+      ?`<div style="display:flex;gap:5px;align-items:center">
+          <input class="inli" id="bi" type="number" value="${bud}" inputmode="decimal">
+          <button class="okb" onclick="saveBud('${cat}')">✓</button>
+          <button class="cxb" onclick="cancelBud()">✕</button>
+        </div>`
+      :`<div style="display:flex;gap:5px">
+          <button class="edbtn" onclick="startBud('${cat}')">Edit</button>
+          ${!isDefault?`<button class="btnd" style="padding:3px 8px;font-size:11px" onclick="delCat('${cat}')">🗑️</button>`:''}
+        </div>`;
+    return `
+    <div class="bi">
+      <div class="br2">
+        <div class="bcat">${CAT_ICONS[cat]||'📦'} ${cat}</div>${edRow}
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#9CA3AF;margin-bottom:5px">
+        <span>${fmt(spent)} spent</span>
+        <span style="color:${over?'#DC2626':'#9CA3AF'}">${fmt(bud)} budget${over?' ⚠️ Over!':''}</span>
+      </div>
+      <div class="bar"><div class="barf" style="width:${pct}%;background:${pc}"></div></div>
+      <div style="font-size:10px;color:#9CA3AF;margin-top:2px">${pct}% used${bud===0?' — set a budget':''}</div>
+    </div>`}).join('')}`;
+}
+function setBM(m){budM=m;render();}
+function startBud(c){editBC=c;render();setTimeout(()=>{const i=document.getElementById('bi');if(i){i.focus();i.select();}},60);}
+function cancelBud(){editBC=null;render();}
+function saveBud(c){const v=parseFloat(document.getElementById('bi').value);if(!isNaN(v)&&v>=0){budgets[c]=v;save();toast('✅ Budget updated');}editBC=null;render();}
+function delCat(c){if(!confirm(`Delete "${c}" category?`))return;categories=categories.filter(x=>x!==c);delete budgets[c];save();render();toast('🗑️ Category deleted');}
+
+// ══ INVEST ════════════════════════════════════
+function rInvest(){
+  const active=investments.filter(i=>i.status==='active');
+  const returned=investments.filter(i=>i.status==='returned');
+  const totInv=active.reduce((s,i)=>s+i.amountInvested,0);
+  const expRet=active.reduce((s,i)=>s+(i.expectedReturn||0),0);
+  const totProfit=returned.reduce((s,i)=>s+((i.actualReturn||i.expectedReturn||0)-i.amountInvested),0);
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="stitle" style="margin:0">Investments</div>
+    <button class="btnt" onclick="showInvMod()">+ Add</button>
+  </div>
+  <div class="g3">
+    <div class="card cy" style="margin-bottom:0;padding:10px;text-align:center">
+      <div style="font-size:9px;color:#D97706;font-weight:700;text-transform:uppercase">INVESTED</div>
+      <div style="font-size:13px;font-weight:800;color:#D97706">${fmt(totInv)}</div>
+    </div>
+    <div class="card cg" style="margin-bottom:0;padding:10px;text-align:center">
+      <div style="font-size:9px;color:#16A34A;font-weight:700;text-transform:uppercase">EXPECTED</div>
+      <div style="font-size:13px;font-weight:800;color:#16A34A">${fmt(expRet)}</div>
+    </div>
+    <div class="card ${totProfit>=0?'cg':'cr'}" style="margin-bottom:0;padding:10px;text-align:center">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:${totProfit>=0?'#16A34A':'#DC2626'}">PROFIT</div>
+      <div style="font-size:13px;font-weight:800;color:${totProfit>=0?'#16A34A':'#DC2626'}">${fmt(totProfit)}</div>
+    </div>
+  </div>
+  <div style="height:12px"></div>
+  ${investments.length===0?`<div class="emp"><i>📈</i><p>No investments yet.<br>Tap + to add.</p></div>`:''}
+  ${active.length?`<div style="font-weight:700;font-size:12px;color:#D97706;margin-bottom:8px">🟡 Active (${active.length})</div>`:''}
+  ${active.map(i=>invCard(i)).join('')}
+  ${returned.length?`<div style="font-weight:700;font-size:12px;color:#16A34A;margin-bottom:8px;margin-top:4px">✅ Returned (${returned.length})</div>`:''}
+  ${returned.map(i=>invCard(i)).join('')}`;
+}
+function invCard(i){
+  const profit=(i.actualReturn||i.expectedReturn||0)-i.amountInvested;
+  const pc=profit>=0?'#16A34A':'#DC2626';
+  const daysLeft=i.returnDate?Math.round((new Date(i.returnDate)-NOW)/(1000*60*60*24)):null;
+  return `<div class="item">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px">
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${h(i.businessName)}</div>
+        <div class="imt">Owner: ${h(i.ownerName)}</div>
+        ${i.notes?`<div class="imt">${h(i.notes)}</div>`:''}
+        <div class="imt">Return by: ${i.returnDate||'—'}${daysLeft!==null&&i.status==='active'?` <b style="color:${daysLeft<0?'#DC2626':daysLeft<30?'#F59E0B':'#16A34A'}">(${daysLeft<0?Math.abs(daysLeft)+' days overdue':daysLeft+' days left'})</b>`:''}</div>
+      </div>
+      <span class="bdg ${i.status==='active'?'bdgb':'bdgg'}">${i.status==='active'?'Active':'Returned'}</span>
+    </div>
+    <div class="g2" style="margin-bottom:0;gap:7px">
+      <div style="background:#FFFBEB;border-radius:9px;padding:9px;text-align:center;border:1px solid #FDE68A">
+        <div style="font-size:9px;color:#D97706;font-weight:700;text-transform:uppercase">INVESTED</div>
+        <div style="font-weight:800;font-size:13px;color:#D97706">${fmt(i.amountInvested)}</div>
+      </div>
+      <div style="background:${profit>=0?'#F0FDF4':'#FEF2F2'};border-radius:9px;padding:9px;text-align:center;border:1px solid ${profit>=0?'#BBF7D0':'#FECACA'}">
+        <div style="font-size:9px;color:${pc};font-weight:700;text-transform:uppercase">PROFIT</div>
+        <div style="font-weight:800;font-size:13px;color:${pc}">${fmt(profit)}</div>
+      </div>
+    </div>
+    <div class="ar">
+      ${i.status==='active'?`<button class="btno" onclick="retInv(${i.id})">✅ Mark Returned</button>`:''}
+      <button class="btne" onclick="showInvMod(${i.id})">✏️</button>
+      <button class="btnd" onclick="delInv(${i.id})">🗑️</button>
+    </div>
+  </div>`;
+}
+
+// ══ ACTIONS ═══════════════════════════════════
+function delExp(id){if(!confirm('Remove expense?'))return;expenses=expenses.filter(e=>e.id!==id);save();render();toast('🗑️ Removed');}
+function delLoan(id){if(!confirm('Delete loan?'))return;pLoans=pLoans.filter(l=>l.id!==id);save();render();toast('🗑️ Deleted');}
+function delInst(id){if(!confirm('Delete installment?'))return;installments=installments.filter(i=>i.id!==id);save();render();toast('🗑️ Deleted');}
+function delInv(id){if(!confirm('Delete investment?'))return;investments=investments.filter(i=>i.id!==id);save();render();toast('🗑️ Deleted');}
+function delIncome(id){if(!confirm('Delete income entry?'))return;incomes=incomes.filter(i=>i.id!==id);save();render();toast('🗑️ Income removed');}
+function togglePaid(id){pLoans=pLoans.map(l=>l.id===id?{...l,paid:!l.paid}:l);save();render();toast('✅ Updated');}
+function retInv(id){investments=investments.map(i=>i.id===id?{...i,status:'returned'}:i);save();render();toast('✅ Marked returned');}
+
+// ══ MODALS ════════════════════════════════════
+function closeModal(){document.getElementById('modal').innerHTML='';}
+
+// Expense
+function showExpMod(id){
+  const e=id?expenses.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`
+  <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt">${e?'Edit':'Add'} Expense</div><button class="xb" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Description</label><input class="fi" id="ed" value="${e?h(e.description):''}" placeholder="e.g. Grocery store" type="text" autocomplete="off"></div>
+    <div class="fg"><label class="fl">Amount (PKR)</label><input class="fi" id="ea" value="${e?e.amount:''}" placeholder="0" type="number" inputmode="decimal"></div>
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fs" id="ec">${categories.map(c=>`<option value="${c}" ${e&&e.category===c?'selected':''}>${CAT_ICONS[c]||'📦'} ${c}</option>`).join('')}</select>
+    </div>
+    <div class="fg"><label class="fl">Date</label><input class="fi" id="edt" type="date" value="${e?e.date:TODAY}"></div>
+    <button class="btnp" onclick="subExp(${id||''})">💾 ${e?'Update':'Save'} Expense</button>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('ed').focus(),80);
+}
+function subExp(id){
+  const desc=document.getElementById('ed').value.trim();
+  const amt=parseFloat(document.getElementById('ea').value);
+  const cat=document.getElementById('ec').value;
+  const date=document.getElementById('edt').value;
+  if(!desc||isNaN(amt)||amt<=0){toast('⚠️ Fill description and amount');return;}
+  if(id)expenses=expenses.map(e=>e.id===id?{...e,description:desc,amount:amt,category:cat,date}:e);
+  else expenses.push({id:nid++,description:desc,amount:amt,category:cat,date});
+  save();closeModal();render();toast(id?'✅ Updated!':'✅ Saved!');
+}
+
+// Income (one-time only — monthly salaries managed separately)
+function showIncomeMod(id){
+  const inc=id?incomes.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`
+  <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt">${inc?'Edit':'Add'} Income</div><button class="xb" onclick="closeModal()">✕</button></div>
+    <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 12px;margin-bottom:13px;font-size:12px;color:#92400E">
+      💡 For monthly salary, use the <b>Monthly Salaries</b> section above in Wallet tab.
+    </div>
+    <div class="fg"><label class="fl">Amount (PKR)</label><input class="fi" id="ia" value="${inc?inc.amount:''}" placeholder="0" type="number" inputmode="decimal"></div>
+    <div class="fg"><label class="fl">Income Source</label>
+      <select class="fs" id="is">${INC_SRCS.map(s=>`<option value="${s}" ${inc&&inc.source===s?'selected':''}>${INC_ICONS[s]||'💵'} ${s}</option>`).join('')}</select>
+    </div>
+    <div class="fg"><label class="fl">Date</label><input class="fi" id="id2" type="date" value="${inc?inc.date:TODAY}"></div>
+    <div class="fg"><label class="fl">Notes (optional)</label><input class="fi" id="in2" value="${inc?h(inc.notes||''):''}" placeholder="e.g. client payment, bonus..." type="text"></div>
+    <button class="btnp" onclick="subIncome(${id||''})">💾 ${inc?'Update':'Save'} Income</button>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('ia').focus(),80);
+}
+function subIncome(id){
+  const amt=parseFloat(document.getElementById('ia').value);
+  const src=document.getElementById('is').value;
+  const date=document.getElementById('id2').value;
+  const notes=document.getElementById('in2').value.trim();
+  if(isNaN(amt)||amt<=0){toast('⚠️ Enter a valid amount');return;}
+  if(id)incomes=incomes.map(i=>i.id===id?{...i,amount:amt,source:src,date,notes}:i);
+  else incomes.push({id:nid++,amount:amt,source:src,date,notes});
+  save();closeModal();render();toast(id?'✅ Updated!':'✅ Income saved!');
+}
+
+// ── Salary Management ──────────────────────────
+function salaryMonths(sal){
+  // Generate months from salary's startMonth up to current month
+  const r=[];
+  const [sy,sm]=sal.startMonth.split('-').map(Number);
+  const start=new Date(sy,sm-1,1);
+  const end=new Date(NOW.getFullYear(),NOW.getMonth(),1);
+  let cur=new Date(start);
+  while(cur<=end){
+    const ym=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`;
+    r.push(ym);
+    cur.setMonth(cur.getMonth()+1);
+  }
+  return r.reverse(); // newest first
+}
+function isSalPaid(salId,month){
+  return salaryPayments.some(p=>p.salaryId===salId&&p.month===month&&p.paid);
+}
+function toggleSalMonth(salId,month){
+  const existing=salaryPayments.find(p=>p.salaryId===salId&&p.month===month);
+  if(existing){
+    salaryPayments=salaryPayments.map(p=>p.salaryId===salId&&p.month===month?{...p,paid:!p.paid,paidDate:!p.paid?TODAY:''}:p);
+    const wasPaid=existing.paid;
+    if(!wasPaid){
+      // Mark paid → add income entry
+      const sal=salaries.find(s=>s.id===salId);
+      if(sal){incomes.push({id:nid++,amount:sal.amount,source:'Salary',date:month+'-01',notes:sal.companyName+' salary'});}
+    } else {
+      // Mark unpaid → remove auto-added income entry for that month
+      incomes=incomes.filter(i=>!(i.source==='Salary'&&i.notes===salaries.find(s=>s.id===salId)?.companyName+' salary'&&i.date===month+'-01'));
+    }
+  } else {
+    // First time marking this month
+    salaryPayments.push({salaryId:salId,month,paid:true,paidDate:TODAY});
+    const sal=salaries.find(s=>s.id===salId);
+    if(sal){incomes.push({id:nid++,amount:sal.amount,source:'Salary',date:month+'-01',notes:sal.companyName+' salary'});}
+    toast('✅ Salary marked as received!');
+  }
+  save();render();
+}
+function showSalaryMod(id){
+  const s=id?salaries.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`
+  <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt">${s?'Edit':'Add'} Monthly Salary</div><button class="xb" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Company Name</label><input class="fi" id="sc" value="${s?h(s.companyName):''}" placeholder="e.g. Tech Solutions Pvt." type="text"></div>
+    <div class="fg"><label class="fl">Monthly Salary (PKR)</label><input class="fi" id="sa" value="${s?s.amount:''}" placeholder="0" type="number" inputmode="decimal"></div>
+    <div class="fg"><label class="fl">Start Month</label><input class="fi" id="sm2" type="month" value="${s?s.startMonth:'2026-04'}"></div>
+    <div class="fg"><label class="fl">Notes (optional)</label><input class="fi" id="sn" value="${s?h(s.notes||''):''}" placeholder="e.g. Main job, Part time..." type="text"></div>
+    <button class="btnp" onclick="subSalary(${id||''})">💾 ${s?'Update':'Save'} Salary</button>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('sc').focus(),80);
+}
+function subSalary(id){
+  const company=document.getElementById('sc').value.trim();
+  const amt=parseFloat(document.getElementById('sa').value);
+  const sm=document.getElementById('sm2').value;
+  const notes=document.getElementById('sn').value.trim();
+  if(!company||isNaN(amt)||amt<=0){toast('⚠️ Fill company name and amount');return;}
+  if(id)salaries=salaries.map(s=>s.id===id?{...s,companyName:company,amount:amt,startMonth:sm,notes}:s);
+  else salaries.push({id:nid++,companyName:company,amount:amt,startMonth:sm,active:true,notes});
+  save();closeModal();render();toast(id?'✅ Updated!':'✅ Salary added!');
+}
+function delSalary(id){
+  if(!confirm('Delete this salary source?'))return;
+  salaries=salaries.filter(s=>s.id!==id);
+  salaryPayments=salaryPayments.filter(p=>p.salaryId!==id);
+  save();render();toast('🗑️ Deleted');
+}
+
+// Set Balance
+function showSetBalanceMod(){
+  document.getElementById('modal').innerHTML=`
+  <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt">⚙️ Set Starting Balance</div><button class="xb" onclick="closeModal()">✕</button></div>
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:13px;margin-bottom:16px;font-size:13px;color:#2563EB;line-height:1.6">
+      <b>How balance works:</b><br>
+      Balance = Starting Balance + All Income − All Expenses<br><br>
+      Set your current bank balance here as the starting point. All future income will be added and expenses deducted automatically.
+    </div>
+    <div class="fg"><label class="fl">Your Current Bank Balance (PKR)</label><input class="fi" id="bb" value="${bankInitBalance||''}" placeholder="e.g. 250000" type="number" inputmode="decimal"></div>
+    <button class="btnp" onclick="saveBalance()">💾 Save Balance</button>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('bb').focus(),80);
+}
+function saveBalance(){
+  const v=parseFloat(document.getElementById('bb').value);
+  if(isNaN(v)){toast('⚠️ Enter a valid amount');return;}
+  bankInitBalance=v;save();closeModal();render();toast('✅ Balance updated!');
+}
+
+// Loan
+function showLoanMod(id){
+  const l=id?pLoans.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`
+  <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt">${l?'Edit':'Add'} Loan</div><button class="xb" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Person's Name</label><input class="fi" id="lp" value="${l?h(l.person):''}" placeholder="e.g. Ahmed" type="text"></div>
+    <div class="fg"><label class="fl">Amount (PKR)</label><input class="fi" id="la" value="${l?l.amount:''}" placeholder="0" type="number" inputmode="decimal"></div>
+    <div class="fg"><label class="fl">Direction</label>
+      <select class="fs" id="ld">
+        <option value="lent" ${!l||l.direction==='lent'?'selected':''}>💸 I Lent Money</option>
+        <option value="borrowed" ${l&&l.direction==='borrowed'?'selected':''}>🤲 I Borrowed Money</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Due Date</label><input class="fi" id="ldu" type="date" value="${l&&l.dueDate?l.dueDate:''}"></div>
+    <div class="fg"><label class="fl">Notes</label><input class="fi" id="ln" value="${l?h(l.notes||''):''}" placeholder="Purpose..." type="text"></div>
+    <button class="btnp" onclick="subLoan(${id||''})">💾 ${l?'Update':'Save'} Loan</button>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('lp').focus(),80);
+}
+function subLoan(id){
+  const person=document.getElementById('lp').value.trim();
+  const amt=parseFloat(document.getElementById('la').value);
+  const dir=document.getElementById('ld').value;
+  const due=document.getElementById('ldu').value;
+  const notes=document.getElementById('ln').value.trim();
+  if(!person||isNaN(amt)||amt<=0){toast('⚠️ Fill name and amount');return;}
+  if(id)pLoans=pLoans.map(l=>l.id===id?{...l,person,amount:amt,direction:dir,dueDate:due,notes}:l);
+  else pLoans.push({id:nid++,person,amount:amt,direction:dir,dueDate:due,paid:false,notes});
+  save();closeModal();render();toast(id?'✅ Updated!':'✅ Saved!');
+}
+
+// Installment
+function showInstMod(id){
+  const i=id?installments.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`
+  <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt">${i?'Edit':'Add'} Installment</div><button class="xb" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Item Name</label><input class="fi" id="inn" value="${i?h(i.itemName):''}" placeholder="e.g. Samsung Galaxy A55" type="text"></div>
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fs" id="inc">${INST_CATS.map(c=>`<option value="${c}" ${i&&i.category===c?'selected':''}>${INST_ICONS[c]} ${c}</option>`).join('')}</select>
+    </div>
+    <div class="fg"><label class="fl">Monthly Installment (PKR)</label><input class="fi" id="inm" value="${i?i.monthlyPayment:''}" placeholder="0" type="number" inputmode="decimal" oninput="calcTotal()"></div>
+    <div class="fg"><label class="fl">Total Months</label><input class="fi" id="int" value="${i?i.totalMonths:''}" placeholder="e.g. 12" type="number" inputmode="numeric" oninput="calcTotal()"></div>
+    <div id="intot" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:11px;margin-bottom:13px;display:${i?'block':'none'}">
+      <div style="font-size:11px;color:#2563EB;font-weight:700;text-transform:uppercase;margin-bottom:2px">Auto-calculated Total Amount</div>
+      <div id="intotval" style="font-size:18px;font-weight:800;color:#2563EB">${i?fmt(i.monthlyPayment*i.totalMonths):''}</div>
+    </div>
+    <div class="fg"><label class="fl">Start Date</label><input class="fi" id="ins" type="date" value="${i?i.startDate:TODAY}"></div>
+    <div class="fg"><label class="fl">Notes (Bank / Source)</label><input class="fi" id="ino" value="${i?h(i.notes||''):''}" placeholder="e.g. Bank Alfalah, Jazz Cash" type="text"></div>
+    <button class="btnp" onclick="subInst(${id||''})">💾 ${i?'Update':'Save'} Installment</button>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('inn').focus(),80);
+}
+function calcTotal(){
+  const m=parseFloat(document.getElementById('inm').value)||0;
+  const t=parseInt(document.getElementById('int').value)||0;
+  const div=document.getElementById('intot');const val=document.getElementById('intotval');
+  if(m>0&&t>0){div.style.display='block';val.textContent=fmt(m*t);}else div.style.display='none';
+}
+function subInst(id){
+  const name=document.getElementById('inn').value.trim();
+  const cat=document.getElementById('inc').value;
+  const mp=parseFloat(document.getElementById('inm').value);
+  const tm=parseInt(document.getElementById('int').value);
+  const sd=document.getElementById('ins').value;
+  const notes=document.getElementById('ino').value.trim();
+  if(!name||isNaN(mp)||mp<=0||isNaN(tm)||tm<=0){toast('⚠️ Fill name, monthly amount and total months');return;}
+  if(id)installments=installments.map(i=>i.id===id?{...i,itemName:name,category:cat,monthlyPayment:mp,totalMonths:tm,startDate:sd,notes}:i);
+  else installments.push({id:nid++,itemName:name,category:cat,monthlyPayment:mp,totalMonths:tm,startDate:sd,notes});
+  save();closeModal();render();toast(id?'✅ Updated!':'✅ Saved!');
+}
+
+// Investment
+function showInvMod(id){
+  const inv=id?investments.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`
+  <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt">${inv?'Edit':'Add'} Investment</div><button class="xb" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Business Name</label><input class="fi" id="ibn" value="${inv?h(inv.businessName):''}" placeholder="e.g. Ali General Store" type="text"></div>
+    <div class="fg"><label class="fl">Owner Name</label><input class="fi" id="ion" value="${inv?h(inv.ownerName):''}" placeholder="e.g. Ali Hassan" type="text"></div>
+    <div class="fg"><label class="fl">Amount Invested (PKR)</label><input class="fi" id="iai" value="${inv?inv.amountInvested:''}" placeholder="0" type="number" inputmode="decimal"></div>
+    <div class="fg"><label class="fl">Expected Return (PKR)</label><input class="fi" id="ier" value="${inv?inv.expectedReturn||'':''}" placeholder="0" type="number" inputmode="decimal"></div>
+    ${inv&&inv.status==='returned'?`<div class="fg"><label class="fl">Actual Return Received (PKR)</label><input class="fi" id="iar" value="${inv.actualReturn||''}" placeholder="0" type="number" inputmode="decimal"></div>`:''}
+    <div class="fg"><label class="fl">Return Date</label><input class="fi" id="ird" type="date" value="${inv&&inv.returnDate?inv.returnDate:''}"></div>
+    <div class="fg"><label class="fl">Notes</label><input class="fi" id="ino2" value="${inv?h(inv.notes||''):''}" placeholder="Partnership details..." type="text"></div>
+    <button class="btnp" onclick="subInv(${id||''})">💾 ${inv?'Update':'Save'} Investment</button>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('ibn').focus(),80);
+}
+function subInv(id){
+  const bn=document.getElementById('ibn').value.trim();
+  const on=document.getElementById('ion').value.trim();
+  const ai=parseFloat(document.getElementById('iai').value);
+  const er=parseFloat(document.getElementById('ier').value)||0;
+  const rd=document.getElementById('ird').value;
+  const n=document.getElementById('ino2').value.trim();
+  const arEl=document.getElementById('iar');
+  const ar=arEl?parseFloat(arEl.value)||0:0;
+  if(!bn||!on||isNaN(ai)||ai<=0){toast('⚠️ Fill business name, owner and amount');return;}
+  if(id)investments=investments.map(i=>i.id===id?{...i,businessName:bn,ownerName:on,amountInvested:ai,expectedReturn:er,returnDate:rd,notes:n,...(arEl?{actualReturn:ar}:{})}:i);
+  else investments.push({id:nid++,businessName:bn,ownerName:on,amountInvested:ai,expectedReturn:er,returnDate:rd,status:'active',notes:n});
+  save();closeModal();render();toast(id?'✅ Updated!':'✅ Saved!');
+}
+
+// Add Category
+function showAddCatMod(){
+  document.getElementById('modal').innerHTML=`
+  <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt">Add Category</div><button class="xb" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="fl">Category Name</label><input class="fi" id="ncn" placeholder="e.g. Education" type="text"></div>
+    <div class="fg"><label class="fl">Icon (emoji)</label><input class="fi" id="nci" placeholder="📚" type="text" maxlength="2"></div>
+    <div class="fg"><label class="fl">Monthly Budget (PKR)</label><input class="fi" id="ncb" placeholder="0" type="number" inputmode="decimal"></div>
+    <button class="btnp" onclick="subCat()">✅ Add Category</button>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('ncn').focus(),80);
+}
+function subCat(){
+  const name=document.getElementById('ncn').value.trim();
+  const icon=document.getElementById('nci').value.trim()||'📦';
+  const bud=parseFloat(document.getElementById('ncb').value)||0;
+  if(!name){toast('⚠️ Enter category name');return;}
+  if(categories.includes(name)){toast('⚠️ Already exists');return;}
+  categories.push(name);CAT_ICONS[name]=icon;CAT_COLORS[name]='#9CA3AF';
+  if(bud>0)budgets[name]=bud;
+  save();closeModal();render();toast('✅ Category added!');
+}
+
+// ══ GITHUB GIST SYNC ══════════════════════════
+function setSyncUI(state){
+  const dot=document.getElementById('sync-dot');
+  const txt=document.getElementById('sync-txt');
+  if(!dot||!txt)return;
+  const states={
+    idle:   {color:'#9CA3AF',text:'Not set up'},
+    ok:     {color:'#16A34A',text:'Synced ✓'},
+    syncing:{color:'#F59E0B',text:'Syncing…'},
+    offline:{color:'#6B7280',text:'Offline'},
+    error:  {color:'#DC2626',text:'Sync error'},
+    ready:  {color:'#2563EB',text:'Connected'},
+  };
+  const s=states[state]||states.idle;
+  dot.style.background=s.color;
+  txt.textContent=s.text;
+}
+
+function buildPayload(){
+  return JSON.stringify({
+    expenses,pLoans,installments,investments,
+    budgets,categories,CAT_ICONS,CAT_COLORS,
+    incomes,salaries,salaryPayments,instPayments,bankInitBalance,nid,
+    savedAt:new Date().toISOString()
+  });
+}
+
+async function syncToGist(){
+  if(!githubToken||!gistId||!navigator.onLine)return;
+  setSyncUI('syncing');
+  try{
+    const res=await fetch(`https://api.github.com/gists/${gistId}`,{
+      method:'PATCH',
+      headers:{Authorization:`token ${githubToken}`,'Content-Type':'application/json'},
+      body:JSON.stringify({files:{'fintrack-data.json':{content:buildPayload()}}})
+    });
+    if(!res.ok)throw new Error('Failed');
+    lastSynced=new Date().toLocaleTimeString();
+    localStorage.setItem('fp_last_sync',lastSynced);
+    setSyncUI('ok');
+  }catch(e){setSyncUI('error');}
+}
+
+async function syncFromGist(){
+  if(!githubToken||!gistId||!navigator.onLine)return;
+  setSyncUI('syncing');
+  try{
+    const res=await fetch(`https://api.github.com/gists/${gistId}`,{
+      headers:{Authorization:`token ${githubToken}`}
+    });
+    if(!res.ok)throw new Error('Failed');
+    const data=await res.json();
+    const file=data.files['fintrack-data.json'];
+    if(!file)throw new Error('No data file');
+    const d=JSON.parse(file.content);
+    // Only overwrite if remote data is newer
+    const remoteTime=d.savedAt?new Date(d.savedAt):0;
+    const localTime=localStorage.getItem('fp_last_sync')?new Date(localStorage.getItem('fp_last_sync_ts')||0):0;
+    if(remoteTime>localTime){
+      expenses=d.expenses||expenses;
+      pLoans=d.pLoans||pLoans;
+      installments=d.installments||installments;
+      investments=d.investments||investments;
+      budgets=d.budgets||budgets;
+      categories=d.categories||categories;
+      CAT_ICONS=d.CAT_ICONS||CAT_ICONS;
+      CAT_COLORS=d.CAT_COLORS||CAT_COLORS;
+      incomes=d.incomes||incomes;
+      salaries=d.salaries||salaries;
+      salaryPayments=d.salaryPayments||salaryPayments;
+      instPayments=d.instPayments||instPayments;
+      bankInitBalance=d.bankInitBalance||bankInitBalance;
+      nid=d.nid||nid;
+      // persist to localStorage
+      save();
+      render();
+      toast('☁️ Data synced from GitHub!');
+      localStorage.setItem('fp_last_sync_ts',d.savedAt);
+    }
+    setSyncUI('ok');
+  }catch(e){setSyncUI('error');}
+}
+
+async function createGist(token){
+  const res=await fetch('https://api.github.com/gists',{
+    method:'POST',
+    headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},
+    body:JSON.stringify({
+      description:'FinTrack Pro Data Backup',
+      public:false,
+      files:{'fintrack-data.json':{content:buildPayload()}}
+    })
+  });
+  if(!res.ok)throw new Error('Create failed');
+  const data=await res.json();
+  return data.id;
+}
+
+async function testAndSaveSync(){
+  const token=document.getElementById('gh-token').value.trim();
+  const gist=document.getElementById('gh-gist').value.trim();
+  if(!token){toast('⚠️ Enter your GitHub token');return;}
+  const btn=document.getElementById('sync-save-btn');
+  btn.textContent='Testing…';btn.disabled=true;
+  try{
+    // Verify token works
+    const r=await fetch('https://api.github.com/user',{headers:{Authorization:`token ${token}`}});
+    if(!r.ok)throw new Error('Invalid token');
+    const user=await r.json();
+    let finalGistId=gist;
+    if(!finalGistId){
+      // Auto-create a new gist
+      finalGistId=await createGist(token);
+      toast(`✅ Gist created! ID: ${finalGistId}`);
+    }
+    // Save credentials
+    githubToken=token;gistId=finalGistId;
+    localStorage.setItem('fp_gh_token',token);
+    localStorage.setItem('fp_gh_gist',finalGistId);
+    closeModal();
+    setSyncUI('ok');
+    toast(`✅ Syncing as ${user.login}!`);
+    syncToGist();
+  }catch(e){
+    btn.textContent='Save & Connect';btn.disabled=false;
+    toast('❌ Error: '+e.message);
+  }
+}
+
+function disconnectSync(){
+  if(!confirm('Disconnect GitHub sync? Your local data stays safe.'))return;
+  githubToken='';gistId='';lastSynced='';
+  localStorage.removeItem('fp_gh_token');
+  localStorage.removeItem('fp_gh_gist');
+  localStorage.removeItem('fp_last_sync');
+  setSyncUI('idle');
+  closeModal();
+  toast('🔌 Disconnected');
+}
+
+// Auto sync when back online
+window.addEventListener('online',()=>{setSyncUI(githubToken?'syncing':'idle');syncFromGist();});
+window.addEventListener('offline',()=>setSyncUI(githubToken?'offline':'idle'));
+
+function showSettingsMod(){
+  const connected=!!(githubToken&&gistId);
+  document.getElementById('modal').innerHTML=`
+  <div class="ov" onclick="closeModal()"><div class="sh" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt">⚙️ GitHub Sync Settings</div><button class="xb" onclick="closeModal()">✕</button></div>
+
+    ${connected?`
+    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:13px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;color:#16A34A;margin-bottom:4px">✅ GitHub Sync Active</div>
+      <div style="font-size:12px;color:#6B7280">Gist ID: <code style="background:#E5E7EB;padding:1px 5px;border-radius:4px;font-size:11px">${gistId}</code></div>
+      ${lastSynced?`<div style="font-size:11px;color:#9CA3AF;margin-top:3px">Last synced: ${lastSynced}</div>`:''}
+    </div>
+    <div class="g2" style="margin-bottom:8px">
+      <button class="btnp" style="margin:0" onclick="syncFromGist().then(()=>closeModal())">⬇️ Pull from GitHub</button>
+      <button class="btnp" style="margin:0;background:linear-gradient(135deg,#2563EB,#1D4ED8)" onclick="syncToGist().then(()=>closeModal())">⬆️ Push to GitHub</button>
+    </div>
+    <button onclick="disconnectSync()" style="width:100%;padding:11px;border-radius:11px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px">🔌 Disconnect Sync</button>
+    `:`
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:13px;margin-bottom:16px;font-size:13px;color:#1D4ED8;line-height:1.7">
+      <b>📋 How to set up (3 steps):</b><br>
+      1. Go to <b>github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)</b><br>
+      2. Click <b>Generate new token</b> → tick <b>gist</b> scope only → copy the token<br>
+      3. Paste it below and tap <b>Save & Connect</b> — a private Gist will be created automatically ✅
+    </div>
+    <div class="fg">
+      <label class="fl">GitHub Personal Access Token</label>
+      <input class="fi" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+    </div>
+    <div class="fg">
+      <label class="fl">Gist ID (optional — leave blank to auto-create)</label>
+      <input class="fi" id="gh-gist" type="text" placeholder="Leave blank to auto-create a new Gist" autocomplete="off">
+    </div>
+    <button class="btnp" id="sync-save-btn" onclick="testAndSaveSync()">🔗 Save & Connect to GitHub</button>
+    <div style="margin-top:12px;font-size:12px;color:#9CA3AF;text-align:center">🔒 Your token is stored only on this device (localStorage). Never shared.</div>
+    `}
+  </div></div>`;
+}
+
+// ══ INIT ══════════════════════════════════════
+load();
+document.getElementById('hdr-date').textContent=NOW.toLocaleDateString('en-PK',{month:'long',year:'numeric'});
+render();
+// Set initial sync status dot
+if(githubToken&&gistId){
+  if(navigator.onLine){setSyncUI('syncing');syncFromGist();}
+  else setSyncUI('offline');
+} else {
+  setSyncUI('idle');
+}
+</script>
+</body>
+</html>
