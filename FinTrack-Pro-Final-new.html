@@ -246,7 +246,7 @@ const NOW=new Date();
 const CUR_M=`${NOW.getFullYear()}-${String(NOW.getMonth()+1).padStart(2,'0')}`;
 const TODAY=NOW.toISOString().split('T')[0];
 
-let tab='home',lSub='personal',lFlt='all',cFlt='All',budM=CUR_M,expM=CUR_M,editBC=null,walTrFlt='all',instMonthFlt={},selectedInst=null,nid=200;
+let tab='home',lSub='personal',lFlt='all',cFlt='All',budM=CUR_M,editBC=null,walTrFlt='all',instMonthFlt={},selectedInst=null,nid=200;
 let expenses=[],pLoans=[],installments=[],investments=[],budgets={},categories=[...DEF_CATS];
 let incomes=[],bankInitBalance=0;
 let salaries=[],salaryPayments=[],instPayments=[];
@@ -401,7 +401,7 @@ function calcBalance(){
 
 // ══ NAV ═══════════════════════════════════════
 function go(t){
-  tab=t;lSub='personal';lFlt='all';cFlt='All';editBC=null;walTrFlt='all';expM=CUR_M;
+  tab=t;lSub='personal';lFlt='all';cFlt='All';editBC=null;walTrFlt='all';
   document.querySelectorAll('.ni').forEach(b=>b.classList.remove('on'));
   document.getElementById('t-'+t).classList.add('on');
   const fab=document.getElementById('fab');
@@ -799,88 +799,44 @@ function setWTF(f){walTrFlt=f;render();}
 
 // ══ EXPENSES ══════════════════════════════════
 function rExp(){
-  // Month-filtered expenses
-  const monthExp=expenses.filter(e=>e.date&&e.date.startsWith(expM));
-  const sorted=[...monthExp].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const sorted=[...expenses].sort((a,b)=>new Date(b.date)-new Date(a.date));
   const filtered=cFlt==='All'?sorted:sorted.filter(e=>e.category===cFlt);
-
-  // Totals for selected month
-  const monthTotal=monthExp.reduce((s,e)=>s+e.amount,0);
-  const catTotal=filtered.reduce((s,e)=>s+e.amount,0);
-
-  // Budget bar for selected category in selected month
+  const tm=mExp(CUR_M);
   let budBar='';
   if(cFlt!=='All'&&budgets[cFlt]){
-    const p=Math.min(100,Math.round(catTotal/budgets[cFlt]*100));
+    const s=tm.filter(e=>e.category===cFlt).reduce((a,e)=>a+e.amount,0);
+    const p=Math.min(100,Math.round(s/budgets[cFlt]*100));
     const pc=p>90?'#DC2626':p>70?'#F59E0B':'#16A34A';
-    const selectedLabel=monthOpts().find(o=>o.ym===expM)?.label||expM;
     budBar=`<div class="card cg" style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
-        <b>${cFlt} Budget</b>
-        <span style="font-size:12px;color:#6B7280">${selectedLabel}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
-        <span>Spent: <b style="color:#DC2626">${fmt(catTotal)}</b></span>
-        <span>Budget: <b>${fmt(budgets[cFlt])}</b></span>
-      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><b>${cFlt} Budget (This Month)</b><span>${fmt(s)} / ${fmt(budgets[cFlt])}</span></div>
       <div class="bar"><div class="barf" style="width:${p}%;background:${pc}"></div></div>
-      <div style="font-size:11px;color:${pc};font-weight:600;margin-top:3px">${p}% used${p>100?' ⚠️ Over budget!':''}</div>
     </div>`;
   }
-
-  const opts=monthOpts();
-  const selectedLabel=opts.find(o=>o.ym===expM)?.label||expM;
-
   const list=filtered.length===0
-    ?`<div class="emp"><i>💸</i><p>No ${cFlt==='All'?'':cFlt+' '}expenses in ${selectedLabel}.</p><p style="font-size:12px;margin-top:6px">Tap + to add one.</p></div>`
+    ?`<div class="emp"><i>💸</i><p>No expenses yet. Tap + to add.</p></div>`
     :filtered.map(e=>`<div class="item">
       <div class="ir">
         <div class="ibox" style="background:${CAT_COLORS[e.category]||'#9CA3AF'}18">${CAT_ICONS[e.category]||'📦'}</div>
-        <div style="flex:1;min-width:0">
-          <div class="inm">${h(e.description)}</div>
-          <div class="imt">${e.category} · ${e.date}</div>
-        </div>
-        <div style="font-weight:700;font-size:14px;text-align:right;color:#DC2626;flex-shrink:0">-${fmt(e.amount)}</div>
+        <div style="flex:1;min-width:0"><div class="inm">${h(e.description)}</div><div class="imt">${e.category} · ${e.date}</div></div>
+        <div style="font-weight:700;font-size:14px;text-align:right;color:#DC2626">-${fmt(e.amount)}</div>
       </div>
       <div class="ar">
         <button class="btne" onclick="showExpMod(${e.id})">✏️ Edit</button>
         <button class="btnd" onclick="delExp(${e.id})">🗑️ Delete</button>
       </div>
     </div>`).join('');
-
   return `
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
     <div class="stitle" style="margin:0">Expenses</div>
     <button class="btnt" onclick="showExpMod()">+ Add</button>
   </div>
-
-  <!-- Month selector -->
-  <select class="ms" onchange="setExpM(this.value)">
-    ${opts.map(o=>`<option value="${o.ym}" ${o.ym===expM?'selected':''}>${o.label}${o.ym===CUR_M?' (Current)':''}</option>`).join('')}
-  </select>
-
-  <!-- Month summary strip -->
-  <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:12px;padding:10px 14px;border:1px solid #EBEBEB;margin-bottom:12px">
-    <div>
-      <div style="font-size:10px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Total Spent</div>
-      <div style="font-size:18px;font-weight:800;color:#DC2626">-${fmt(monthTotal)}</div>
-    </div>
-    <div style="text-align:right">
-      <div style="font-size:10px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:.06em">${cFlt==='All'?'Transactions':'In Category'}</div>
-      <div style="font-size:18px;font-weight:800;color:#374151">${cFlt==='All'?monthExp.length:filtered.length} entries</div>
-    </div>
-  </div>
-
-  <!-- Category filter pills -->
   <div class="pills">
     <button class="pill ${cFlt==='All'?'on':''}" onclick="setCat('All')">All</button>
     ${categories.map(c=>`<button class="pill ${cFlt===c?'on':''}" onclick="setCat('${c}')">${CAT_ICONS[c]||'📦'} ${c}</button>`).join('')}
   </div>
-
   ${budBar}${list}`;
 }
 function setCat(f){cFlt=f;render();}
-function setExpM(m){expM=m;cFlt='All';render();}
 
 // ══ LOANS ═════════════════════════════════════
 function rLoans(){
@@ -986,7 +942,6 @@ function rLoans(){
             <div style="font-size:11px;color:#9CA3AF">${i.category} · ${fmt(i.monthlyPayment)}/mo</div>
           </div>
           <button class="btne" style="padding:6px 10px;font-size:13px;flex-shrink:0" onclick="showInstMod(${i.id})">✏️</button>
-          <button class="btnd" style="padding:6px 10px;font-size:13px;flex-shrink:0" onclick="delInstDetail(${i.id})">🗑️</button>
         </div>
 
         <!-- Progress card -->
@@ -1068,48 +1023,42 @@ function rLoans(){
         const nextDue=unpaidMonths.find(m=>m<=CUR_M)||unpaidMonths[0];
 
         return `
-        <div style="background:#fff;border-radius:15px;padding:14px;border:1px solid #EBEBEB;margin-bottom:10px">
-          <!-- Top row: icon + name + amount -->
+        <div onclick="openInst(${i.id})" style="background:#fff;border-radius:15px;padding:14px;border:1px solid #EBEBEB;margin-bottom:10px;cursor:pointer;active:opacity:.8">
           <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">
-            <div onclick="openInst(${i.id})" style="width:46px;height:46px;border-radius:13px;background:${INST_COL[i.category]||'#9CA3AF'}18;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;cursor:pointer">${INST_ICONS[i.category]||'📦'}</div>
-            <div onclick="openInst(${i.id})" style="flex:1;min-width:0;cursor:pointer">
+            <div style="width:46px;height:46px;border-radius:13px;background:${INST_COL[i.category]||'#9CA3AF'}18;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${INST_ICONS[i.category]||'📦'}</div>
+            <div style="flex:1;min-width:0">
               <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h(i.itemName)}</div>
               <div style="font-size:11px;color:#9CA3AF;margin-top:2px">${i.category}${i.notes?' · '+h(i.notes):''}</div>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+            <div style="text-align:right;flex-shrink:0">
               ${done
                 ?`<span style="background:#DCFCE7;color:#16A34A;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px">✓ Done</span>`
                 :`<span style="background:#EFF6FF;color:#2563EB;font-size:12px;font-weight:800">${fmt(i.monthlyPayment)}<span style="font-size:9px;color:#9CA3AF">/mo</span></span>`}
-              <div style="display:flex;gap:5px">
-                <button onclick="event.stopPropagation();showInstMod(${i.id})" style="padding:5px 10px;border-radius:8px;border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;cursor:pointer;font-size:12px;font-weight:600">✏️ Edit</button>
-                <button onclick="event.stopPropagation();delInstDetail(${i.id})" style="padding:5px 10px;border-radius:8px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;cursor:pointer;font-size:12px;font-weight:600">🗑️</button>
-              </div>
+              <div style="font-size:10px;color:#9CA3AF;margin-top:3px">Tap for details →</div>
             </div>
           </div>
 
-          <!-- Progress bar (tappable) -->
-          <div onclick="openInst(${i.id})" style="cursor:pointer">
-            <div style="display:flex;justify-content:space-between;font-size:11px;color:#9CA3AF;margin-bottom:5px">
-              <span><b style="color:#16A34A">${paidMonths.length}</b> paid</span>
-              <span style="font-weight:700;color:${done?'#16A34A':'#374151'}">${pct}%</span>
-              <span><b style="color:${done?'#16A34A':'#DC2626'}">${unpaidMonths.length}</b> left</span>
-            </div>
-            <div style="height:7px;background:#E5E7EB;border-radius:99px;overflow:hidden;margin-bottom:8px">
-              <div style="height:100%;width:${pct}%;background:${done?'#16A34A':pct>70?'#F59E0B':'#3B82F6'};border-radius:99px;transition:width .5s ease"></div>
-            </div>
-
-            <!-- Bottom row -->
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div style="font-size:11px;color:#6B7280">
-                ${done?'🎉 Fully paid!'
-                  :nextDue
-                    ?`⏳ Next due: <b style="color:#D97706">${new Date(parseInt(nextDue.split('-')[0]),parseInt(nextDue.split('-')[1])-1,1).toLocaleDateString('en-PK',{month:'short',year:'numeric'})}</b>`
-                    :''}
-              </div>
-              <div style="font-size:11px;color:#9CA3AF">${i.totalMonths} months · ${fmt(i.monthlyPayment*i.totalMonths)}</div>
-            </div>
+          <!-- Progress bar -->
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#9CA3AF;margin-bottom:5px">
+            <span><b style="color:#16A34A">${paidMonths.length}</b> paid</span>
+            <span style="font-weight:700;color:${done?'#16A34A':'#374151'}">${pct}%</span>
+            <span><b style="color:${done?'#16A34A':'#DC2626'}">${unpaidMonths.length}</b> left</span>
           </div>
-        </div>`}).join('');
+          <div style="height:7px;background:#E5E7EB;border-radius:99px;overflow:hidden;margin-bottom:8px">
+            <div style="height:100%;width:${pct}%;background:${done?'#16A34A':pct>70?'#F59E0B':'#3B82F6'};border-radius:99px;transition:width .5s ease"></div>
+          </div>
+
+          <!-- Bottom row: next due + total -->
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:11px;color:#6B7280">
+              ${done?'🎉 Fully paid!'
+                :nextDue
+                  ?`⏳ Next due: <b style="color:#D97706">${new Date(parseInt(nextDue.split('-')[0]),parseInt(nextDue.split('-')[1])-1,1).toLocaleDateString('en-PK',{month:'short',year:'numeric'})}</b>`
+                  :''}
+            </div>
+            <div style="font-size:11px;color:#9CA3AF">${i.totalMonths} months · ${fmt(i.monthlyPayment*i.totalMonths)}</div>
+          </div>
+        </div>`;}).join('');
 
     content=`
     <div class="g2">
@@ -1183,7 +1132,7 @@ function rBudget(){
       <div style="font-size:10px;color:#9CA3AF;margin-top:2px">${pct}% used${bud===0?' — set a budget':''}</div>
     </div>`}).join('')}`;
 }
-function setBM(m){budM=m;expM=m;render();}
+function setBM(m){budM=m;render();}
 function startBud(c){editBC=c;render();setTimeout(()=>{const i=document.getElementById('bi');if(i){i.focus();i.select();}},60);}
 function cancelBud(){editBC=null;render();}
 function saveBud(c){const v=parseFloat(document.getElementById('bi').value);if(!isNaN(v)&&v>=0){budgets[c]=v;save();toast('✅ Budget updated');}editBC=null;render();}
@@ -1257,8 +1206,7 @@ function invCard(i){
 // ══ ACTIONS ═══════════════════════════════════
 function delExp(id){if(!confirm('Remove expense?'))return;expenses=expenses.filter(e=>e.id!==id);save();render();toast('🗑️ Removed');}
 function delLoan(id){if(!confirm('Delete loan?'))return;pLoans=pLoans.filter(l=>l.id!==id);save();render();toast('🗑️ Deleted');}
-function delInst(id){if(!confirm('Delete installment?'))return;installments=installments.filter(i=>i.id!==id);instPayments=instPayments.filter(p=>p.instId!==id);save();render();toast('🗑️ Deleted');}
-function delInstDetail(id){if(!confirm('Delete this installment? All payment history will also be removed.'))return;installments=installments.filter(i=>i.id!==id);instPayments=instPayments.filter(p=>p.instId!==id);selectedInst=null;save();render();toast('🗑️ Installment deleted');}
+function delInst(id){if(!confirm('Delete installment?'))return;installments=installments.filter(i=>i.id!==id);save();render();toast('🗑️ Deleted');}
 function delInv(id){if(!confirm('Delete investment?'))return;investments=investments.filter(i=>i.id!==id);save();render();toast('🗑️ Deleted');}
 function delIncome(id){if(!confirm('Delete income entry?'))return;incomes=incomes.filter(i=>i.id!==id);save();render();toast('🗑️ Income removed');}
 function togglePaid(id){pLoans=pLoans.map(l=>l.id===id?{...l,paid:!l.paid}:l);save();render();toast('✅ Updated');}
