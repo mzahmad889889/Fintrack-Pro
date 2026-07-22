@@ -246,10 +246,10 @@ const NOW=new Date();
 const CUR_M=`${NOW.getFullYear()}-${String(NOW.getMonth()+1).padStart(2,'0')}`;
 const TODAY=NOW.toISOString().split('T')[0];
 
-let tab='home',lSub='personal',lFlt='all',cFlt='All',budM=CUR_M,editBC=null,walTrFlt='all',nid=200;
+let tab='home',lSub='personal',lFlt='all',cFlt='All',budM=CUR_M,editBC=null,walTrFlt='all',instMonthFlt={},selectedInst=null,nid=200;
 let expenses=[],pLoans=[],installments=[],investments=[],budgets={},categories=[...DEF_CATS];
 let incomes=[],bankInitBalance=0;
-let salaries=[],salaryPayments=[];
+let salaries=[],salaryPayments=[],instPayments=[];
 let githubToken='',gistId='',lastSynced='';
 
 // ══ SEED ══════════════════════════════════════
@@ -300,6 +300,7 @@ function load(){
     incomes     =JSON.parse(localStorage.getItem('fp_inc'))||cp(SIN);
     salaries    =JSON.parse(localStorage.getItem('fp_sal'))||cp(SSAL);
     salaryPayments=JSON.parse(localStorage.getItem('fp_spay'))||cp(SPAY);
+    instPayments=JSON.parse(localStorage.getItem('fp_ipay'))||[];
     bankInitBalance=parseFloat(localStorage.getItem('fp_bal')||'0');
     nid         =parseInt(localStorage.getItem('fp_nid')||'200');
     githubToken =localStorage.getItem('fp_gh_token')||'';
@@ -322,6 +323,7 @@ function save(){
   localStorage.setItem('fp_inc',JSON.stringify(incomes));
   localStorage.setItem('fp_sal',JSON.stringify(salaries));
   localStorage.setItem('fp_spay',JSON.stringify(salaryPayments));
+  localStorage.setItem('fp_ipay',JSON.stringify(instPayments));
   localStorage.setItem('fp_bal',bankInitBalance);
   localStorage.setItem('fp_nid',nid);
   syncToGist();
@@ -337,6 +339,36 @@ function todayExp(){return expenses.filter(e=>e.date===TODAY);}
 function todayInc(){return incomes.filter(i=>i.date===TODAY);}
 function byCat(list){const m={};list.forEach(e=>{m[e.category]=(m[e.category]||0)+e.amount;});return Object.entries(m).map(([n,v])=>({name:n,value:v})).sort((a,b)=>b.value-a.value);}
 function paidM(inst){const s=new Date(inst.startDate);const m=(NOW.getFullYear()-s.getFullYear())*12+(NOW.getMonth()-s.getMonth());return Math.min(Math.max(0,m),inst.totalMonths);}
+
+// Generate all months for an installment
+function instMonths(inst){
+  const r=[];
+  const s=new Date(inst.startDate);
+  for(let i=0;i<inst.totalMonths;i++){
+    const d=new Date(s.getFullYear(),s.getMonth()+i,1);
+    const ym=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    r.push(ym);
+  }
+  return r;
+}
+function isInstPaid(instId,month){
+  return instPayments.some(p=>p.instId===instId&&p.month===month&&p.paid);
+}
+function toggleInstMonth(instId,month){
+  const existing=instPayments.find(p=>p.instId===instId&&p.month===month);
+  if(existing){
+    instPayments=instPayments.map(p=>p.instId===instId&&p.month===month?{...p,paid:!p.paid}:p);
+  } else {
+    instPayments.push({instId,month,paid:true});
+    toast('✅ Month marked as paid!');
+  }
+  save();render();
+}
+function setInstMF(instId,flt){
+  instMonthFlt={...instMonthFlt,[instId]:flt};render();
+}
+function openInst(id){selectedInst=id;instMonthFlt={...instMonthFlt,[id]:instMonthFlt[id]||'unpaid'};render();}
+function backToInst(){selectedInst=null;render();}
 function donut(cats,total){
   if(!cats.length||!total)return '#EBEBEB';
   let p=[],d=0;cats.forEach(c=>{const s=c.value/total*360;p.push(`${CAT_COLORS[c.name]||'#9CA3AF'} ${d}deg ${d+s}deg`);d+=s;});
@@ -408,7 +440,7 @@ function rHome(){
   const moInc=mInc(CUR_M).reduce((s,i)=>s+i.amount,0);
   const lent=pLoans.filter(l=>l.direction==='lent'&&!l.paid).reduce((s,l)=>s+l.amount,0);
   const borr=pLoans.filter(l=>l.direction==='borrowed'&&!l.paid).reduce((s,l)=>s+l.amount,0);
-  const instDebt=installments.reduce((s,i)=>{const r=i.totalMonths-paidM(i);return s+r*i.monthlyPayment;},0);
+  const instDebt=installments.reduce((s,i)=>{const unpaid=instMonths(i).filter(m=>!isInstPaid(i.id,m)).length;return s+unpaid*i.monthlyPayment;},0);
   const instMo=installments.reduce((s,i)=>s+i.monthlyPayment,0);
   const totalInv=investments.filter(i=>i.status==='active').reduce((s,i)=>s+i.amountInvested,0);
 
@@ -810,7 +842,7 @@ function setCat(f){cFlt=f;render();}
 function rLoans(){
   const lent=pLoans.filter(l=>l.direction==='lent'&&!l.paid).reduce((s,l)=>s+l.amount,0);
   const borr=pLoans.filter(l=>l.direction==='borrowed'&&!l.paid).reduce((s,l)=>s+l.amount,0);
-  const instDebt=installments.reduce((s,i)=>{const r=i.totalMonths-paidM(i);return s+r*i.monthlyPayment;},0);
+  const instDebt=installments.reduce((s,i)=>{const unpaid=instMonths(i).filter(m=>!isInstPaid(i.id,m)).length;return s+unpaid*i.monthlyPayment;},0);
   const instMo=installments.reduce((s,i)=>s+i.monthlyPayment,0);
   let content='';
 
@@ -856,37 +888,177 @@ function rLoans(){
     </div>
     ${cards}`;
   } else {
-    const cards=installments.length===0
-      ?`<div class="emp"><i>📦</i><p>No installments yet.</p></div>`
-      :installments.map(i=>{
-        const paid=paidM(i);const rem=i.totalMonths-paid;
-        const total=i.monthlyPayment*i.totalMonths;
-        const paidAmt=paid*i.monthlyPayment;const remAmt=rem*i.monthlyPayment;
-        const pct=Math.round(paid/i.totalMonths*100);const done=rem<=0;
-        return `<div class="item">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-            <div class="ibox" style="background:${INST_COL[i.category]||'#9CA3AF'}18">${INST_ICONS[i.category]||'📦'}</div>
-            <div style="flex:1">
-              <div class="inm">${h(i.itemName)} ${done?'<span class="bdg bdgg">✓ Done</span>':''}</div>
-              <div class="imt">${i.category}${i.notes?' · '+h(i.notes):''} · Started: ${i.startDate}</div>
+    // ── Detail view: one installment's months ──
+    if(selectedInst!==null){
+      const i=installments.find(x=>x.id===selectedInst);
+      if(!i){selectedInst=null;}
+      else{
+        const allMonths=instMonths(i);
+        const paidMonths=allMonths.filter(m=>isInstPaid(i.id,m));
+        const unpaidMonths=allMonths.filter(m=>!isInstPaid(i.id,m));
+        const paidAmt=paidMonths.length*i.monthlyPayment;
+        const remAmt=unpaidMonths.length*i.monthlyPayment;
+        const total=i.totalMonths*i.monthlyPayment;
+        const pct=Math.round(paidMonths.length/i.totalMonths*100);
+        const done=unpaidMonths.length===0;
+        const flt=instMonthFlt[i.id]||'unpaid';
+        const shownMonths=flt==='paid'?paidMonths:flt==='unpaid'?unpaidMonths:allMonths;
+
+        const monthRow=(ym)=>{
+          const isPaid=isInstPaid(i.id,ym);
+          const [y,m2]=ym.split('-');
+          const label=new Date(parseInt(y),parseInt(m2)-1,1).toLocaleDateString('en-PK',{month:'long',year:'numeric'});
+          const isCur=ym===CUR_M;
+          const isFuture=ym>CUR_M;
+          return `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid #F5F5F5;background:${isPaid?'#F0FDF4':isFuture?'#FAFAFA':'#fff'}">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;border-radius:10px;background:${isPaid?'#DCFCE7':isFuture?'#F3F4F6':'#FEF9C3'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+                ${isPaid?'✅':isFuture?'🔒':'⏳'}
+              </div>
+              <div>
+                <div style="font-size:14px;font-weight:600;color:#111">${label}</div>
+                <div style="font-size:11px;font-weight:600;margin-top:1px;color:${isPaid?'#16A34A':isFuture?'#9CA3AF':'#D97706'}">
+                  ${isPaid?'Paid ✓':isFuture?'Upcoming':'Pending'}
+                  ${isCur?'<span style="margin-left:5px;font-size:9px;background:#2563EB;color:#fff;padding:1px 6px;border-radius:99px">Current</span>':''}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <span style="font-weight:800;font-size:14px;color:${isPaid?'#16A34A':'#374151'}">${fmt(i.monthlyPayment)}</span>
+              <button onclick="toggleInstMonth(${i.id},'${ym}')" style="padding:7px 12px;border-radius:9px;border:none;cursor:pointer;font-size:12px;font-weight:700;min-width:72px;background:${isPaid?'#FEE2E2':'#DCFCE7'};color:${isPaid?'#DC2626':'#16A34A'}">
+                ${isPaid?'Undo':'Mark Paid'}
+              </button>
+            </div>
+          </div>`;
+        };
+
+        content=`
+        <!-- Back button + title -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <button onclick="backToInst()" style="background:#F3F4F6;border:none;border-radius:10px;padding:8px 12px;cursor:pointer;font-size:14px;font-weight:600;color:#374151;display:flex;align-items:center;gap:5px">← Back</button>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h(i.itemName)}</div>
+            <div style="font-size:11px;color:#9CA3AF">${i.category} · ${fmt(i.monthlyPayment)}/mo</div>
+          </div>
+          <button class="btne" style="padding:6px 10px;font-size:13px;flex-shrink:0" onclick="showInstMod(${i.id})">✏️</button>
+        </div>
+
+        <!-- Progress card -->
+        <div style="background:linear-gradient(135deg,#1D4ED8,#2563EB);border-radius:16px;padding:16px;margin-bottom:14px;color:#fff">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-bottom:14px">
+            <div style="text-align:center;border-right:1px solid rgba(255,255,255,.2)">
+              <div style="font-size:9px;opacity:.75;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Paid</div>
+              <div style="font-size:22px;font-weight:800;margin-top:2px">${paidMonths.length}</div>
+              <div style="font-size:10px;opacity:.75">months</div>
+            </div>
+            <div style="text-align:center;border-right:1px solid rgba(255,255,255,.2)">
+              <div style="font-size:9px;opacity:.75;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Left</div>
+              <div style="font-size:22px;font-weight:800;margin-top:2px;color:${done?'#86EFAC':'#FDE68A'}">${unpaidMonths.length}</div>
+              <div style="font-size:10px;opacity:.75">months</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:9px;opacity:.75;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Total</div>
+              <div style="font-size:22px;font-weight:800;margin-top:2px">${i.totalMonths}</div>
+              <div style="font-size:10px;opacity:.75">months</div>
             </div>
           </div>
-          <div class="g3" style="margin-bottom:9px">
-            <div class="sbox"><div class="sl">Monthly</div><div class="sv">${fmt(i.monthlyPayment)}</div></div>
-            <div class="sbox"><div class="sl">Remaining</div><div class="sv" style="color:${done?'#16A34A':'#DC2626'}">${rem} mo</div></div>
-            <div class="sbox"><div class="sl">Total Mo.</div><div class="sv">${i.totalMonths}</div></div>
+          <!-- Progress bar -->
+          <div style="height:8px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;margin-bottom:8px">
+            <div style="height:100%;width:${pct}%;background:${done?'#4ADE80':'#A3E635'};border-radius:99px;transition:width .5s ease"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
-            <span style="color:#6B7280">Paid: ${fmt(paidAmt)} (${paid} mo)</span>
-            <b style="color:${done?'#16A34A':'#DC2626'}">Left: ${fmt(remAmt)}</b>
+          <div style="display:flex;justify-content:space-between;font-size:11px;opacity:.8">
+            <span>Paid: ${fmt(paidAmt)}</span>
+            <span>${pct}% complete</span>
+            <span>Left: ${fmt(remAmt)}</span>
           </div>
-          <div class="bar" style="background:#DBEAFE"><div class="barf" style="width:${pct}%;background:${done?'#16A34A':'#3B82F6'}"></div></div>
-          <div style="font-size:11px;color:#9CA3AF;margin-top:3px">${pct}% paid · Total: ${fmt(total)}</div>
-          <div class="ar">
-            <button class="btne" onclick="showInstMod(${i.id})">✏️ Edit</button>
-            <button class="btnd" onclick="delInst(${i.id})">🗑️ Delete</button>
+        </div>
+
+        <!-- Tab switcher -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+          <button onclick="setInstMF(${i.id},'unpaid')" style="padding:10px 6px;border-radius:11px;border:2px solid ${flt==='unpaid'?'#F59E0B':'transparent'};cursor:pointer;font-weight:700;font-size:12px;background:${flt==='unpaid'?'#FFFBEB':'#F5F5F0'};color:${flt==='unpaid'?'#D97706':'#6B7280'}">
+            ⏳ Unpaid<br><span style="font-size:16px;font-weight:800">${unpaidMonths.length}</span>
+          </button>
+          <button onclick="setInstMF(${i.id},'paid')" style="padding:10px 6px;border-radius:11px;border:2px solid ${flt==='paid'?'#16A34A':'transparent'};cursor:pointer;font-weight:700;font-size:12px;background:${flt==='paid'?'#F0FDF4':'#F5F5F0'};color:${flt==='paid'?'#16A34A':'#6B7280'}">
+            ✅ Paid<br><span style="font-size:16px;font-weight:800">${paidMonths.length}</span>
+          </button>
+          <button onclick="setInstMF(${i.id},'all')" style="padding:10px 6px;border-radius:11px;border:2px solid ${flt==='all'?'#2563EB':'transparent'};cursor:pointer;font-weight:700;font-size:12px;background:${flt==='all'?'#EFF6FF':'#F5F5F0'};color:${flt==='all'?'#2563EB':'#6B7280'}">
+            📋 All<br><span style="font-size:16px;font-weight:800">${i.totalMonths}</span>
+          </button>
+        </div>
+
+        <!-- Month list -->
+        <div style="background:#fff;border-radius:15px;border:1px solid #EBEBEB;overflow:hidden">
+          ${shownMonths.length===0
+            ?`<div style="text-align:center;padding:32px 20px;color:#9CA3AF">
+                <div style="font-size:36px;margin-bottom:10px">${flt==='paid'?'🎯':'🎉'}</div>
+                <div style="font-weight:600;font-size:14px">${flt==='paid'?'No paid months yet':'All months paid!'}</div>
+                <div style="font-size:12px;margin-top:4px">${flt==='paid'?'Tap "Mark Paid" on unpaid months':'Great job! 🏆'}</div>
+              </div>`
+            :shownMonths.map(ym=>monthRow(ym)).join('')}
+        </div>`;
+
+        return `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="stitle" style="margin:0">Loans & Installments</div>
+          <button class="btnt" onclick="showInstMod()">+ Add</button>
+        </div>
+        <div class="st2">
+          <button class="st" onclick="setLS('personal')">🤝 Personal</button>
+          <button class="st on">📦 Installments</button>
+        </div>
+        ${content}`;
+      }
+    }
+
+    // ── Summary list view ──
+    const cards=installments.length===0
+      ?`<div class="emp"><i>📦</i><p>No installments yet.<br>Tap + to add one.</p></div>`
+      :installments.map(i=>{
+        const allMonths=instMonths(i);
+        const paidMonths=allMonths.filter(m=>isInstPaid(i.id,m));
+        const unpaidMonths=allMonths.filter(m=>!isInstPaid(i.id,m));
+        const pct=Math.round(paidMonths.length/i.totalMonths*100);
+        const done=unpaidMonths.length===0;
+        const nextDue=unpaidMonths.find(m=>m<=CUR_M)||unpaidMonths[0];
+
+        return `
+        <div onclick="openInst(${i.id})" style="background:#fff;border-radius:15px;padding:14px;border:1px solid #EBEBEB;margin-bottom:10px;cursor:pointer;active:opacity:.8">
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">
+            <div style="width:46px;height:46px;border-radius:13px;background:${INST_COL[i.category]||'#9CA3AF'}18;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${INST_ICONS[i.category]||'📦'}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h(i.itemName)}</div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:2px">${i.category}${i.notes?' · '+h(i.notes):''}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              ${done
+                ?`<span style="background:#DCFCE7;color:#16A34A;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px">✓ Done</span>`
+                :`<span style="background:#EFF6FF;color:#2563EB;font-size:12px;font-weight:800">${fmt(i.monthlyPayment)}<span style="font-size:9px;color:#9CA3AF">/mo</span></span>`}
+              <div style="font-size:10px;color:#9CA3AF;margin-top:3px">Tap for details →</div>
+            </div>
           </div>
-        </div>`}).join('');
+
+          <!-- Progress bar -->
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#9CA3AF;margin-bottom:5px">
+            <span><b style="color:#16A34A">${paidMonths.length}</b> paid</span>
+            <span style="font-weight:700;color:${done?'#16A34A':'#374151'}">${pct}%</span>
+            <span><b style="color:${done?'#16A34A':'#DC2626'}">${unpaidMonths.length}</b> left</span>
+          </div>
+          <div style="height:7px;background:#E5E7EB;border-radius:99px;overflow:hidden;margin-bottom:8px">
+            <div style="height:100%;width:${pct}%;background:${done?'#16A34A':pct>70?'#F59E0B':'#3B82F6'};border-radius:99px;transition:width .5s ease"></div>
+          </div>
+
+          <!-- Bottom row: next due + total -->
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:11px;color:#6B7280">
+              ${done?'🎉 Fully paid!'
+                :nextDue
+                  ?`⏳ Next due: <b style="color:#D97706">${new Date(parseInt(nextDue.split('-')[0]),parseInt(nextDue.split('-')[1])-1,1).toLocaleDateString('en-PK',{month:'short',year:'numeric'})}</b>`
+                  :''}
+            </div>
+            <div style="font-size:11px;color:#9CA3AF">${i.totalMonths} months · ${fmt(i.monthlyPayment*i.totalMonths)}</div>
+          </div>
+        </div>`;}).join('');
 
     content=`
     <div class="g2">
@@ -912,7 +1084,7 @@ function rLoans(){
   </div>
   ${content}`;
 }
-function setLS(s){lSub=s;lFlt='all';render();}
+function setLS(s){lSub=s;lFlt='all';selectedInst=null;render();}
 function setLF(f){lFlt=lFlt===f?'all':f;render();}
 
 // ══ BUDGET ════════════════════════════════════
@@ -1341,7 +1513,7 @@ function buildPayload(){
   return JSON.stringify({
     expenses,pLoans,installments,investments,
     budgets,categories,CAT_ICONS,CAT_COLORS,
-    incomes,salaries,salaryPayments,bankInitBalance,nid,
+    incomes,salaries,salaryPayments,instPayments,bankInitBalance,nid,
     savedAt:new Date().toISOString()
   });
 }
@@ -1389,6 +1561,7 @@ async function syncFromGist(){
       incomes=d.incomes||incomes;
       salaries=d.salaries||salaries;
       salaryPayments=d.salaryPayments||salaryPayments;
+      instPayments=d.instPayments||instPayments;
       bankInitBalance=d.bankInitBalance||bankInitBalance;
       nid=d.nid||nid;
       // persist to localStorage
